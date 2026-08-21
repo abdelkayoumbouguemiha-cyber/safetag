@@ -1,5 +1,7 @@
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import ScanForm from "./scan-form";
+import { translations, detectLocale } from "@/lib/i18n/translations";
 
 async function getBraceletInfo(code: string) {
   const res = await fetch(
@@ -17,11 +19,21 @@ async function getBraceletInfo(code: string) {
 
 export default async function ScanPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ code: string }>;
+  searchParams: Promise<{ lang?: string }>;
 }) {
   const { code } = await params;
+  const { lang } = await searchParams;
   const result = await getBraceletInfo(code);
+
+  const headersList = await headers();
+  const locale =
+    (lang as keyof typeof translations) ??
+    detectLocale(headersList.get("accept-language"));
+  const t = translations[locale] ?? translations.en;
+  const dir = locale === "ar" ? "rtl" : "ltr";
 
   if ("notFound" in result || "error" in result) {
     notFound();
@@ -29,21 +41,17 @@ export default async function ScanPage({
 
   if ("inactive" in result) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center p-6 text-center">
-        <h1 className="text-xl font-semibold">This bracelet is no longer active.</h1>
+      <main dir={dir} className="flex min-h-screen flex-col items-center justify-center p-6 text-center">
+        <h1 className="text-xl font-semibold">{t.inactiveBracelet}</h1>
       </main>
     );
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 text-center gap-4">
-      <h1 className="text-2xl font-bold">
-        This child may be lost — {result.childFirstName}
-      </h1>
-      <p className="text-gray-600">
-        Tap below to notify their guardian right away.
-      </p>
-      <ScanForm code={code} />
+    <main dir={dir} className="flex min-h-screen flex-col items-center justify-center p-6 text-center gap-4">
+      <h1 className="text-2xl font-bold">{t.lostChild(result.childFirstName)}</h1>
+      <p className="text-gray-600">{t.tapToNotify}</p>
+      <ScanForm code={code} locale={locale} />
     </main>
   );
 }

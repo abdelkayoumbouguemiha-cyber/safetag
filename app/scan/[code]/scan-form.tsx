@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { translations, type Locale } from "@/lib/i18n/translations";
 
-export default function ScanForm({ code }: { code: string }) {
+export default function ScanForm({ code, locale }: { code: string; locale: Locale }) {
+  const t = translations[locale];
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [hotline, setHotline] = useState<string | null>(null);
 
   async function handleClick() {
     setStatus("sending");
 
-    // Ask for location permission — optional, non-blocking if denied
     let lat: number | undefined;
     let lng: number | undefined;
     let consent = false;
@@ -22,7 +23,6 @@ export default function ScanForm({ code }: { code: string }) {
       lng = position.coords.longitude;
       consent = true;
     } catch {
-      // Denied or unavailable — proceed without location, per design
       consent = false;
     }
 
@@ -35,12 +35,7 @@ export default function ScanForm({ code }: { code: string }) {
 
       const data = await res.json();
       setHotline(data.fallback_hotline ?? null);
-
-      if (res.ok) {
-        setStatus("sent");
-      } else {
-        setStatus("error");
-      }
+      setStatus(res.ok ? "sent" : "error");
     } catch {
       setStatus("error");
     }
@@ -49,12 +44,8 @@ export default function ScanForm({ code }: { code: string }) {
   if (status === "sent") {
     return (
       <div className="text-center">
-        <p className="text-green-600 font-medium">Guardian notified!</p>
-        {hotline && (
-          <p className="text-sm text-gray-500 mt-2">
-            If you don't hear back soon, call {hotline}.
-          </p>
-        )}
+        <p className="text-green-600 font-medium">{t.notified}</p>
+        {hotline && <p className="text-sm text-gray-500 mt-2">{t.hotlineNote(hotline)}</p>}
       </div>
     );
   }
@@ -62,12 +53,8 @@ export default function ScanForm({ code }: { code: string }) {
   if (status === "error") {
     return (
       <div className="text-center">
-        <p className="text-red-600 font-medium">Something went wrong.</p>
-        {hotline && (
-          <p className="text-sm text-gray-500 mt-2">
-            Please call {hotline} directly.
-          </p>
-        )}
+        <p className="text-red-600 font-medium">{t.somethingWrong}</p>
+        {hotline && <p className="text-sm text-gray-500 mt-2">{t.callDirectly(hotline)}</p>}
       </div>
     );
   }
@@ -78,7 +65,7 @@ export default function ScanForm({ code }: { code: string }) {
       disabled={status === "sending"}
       className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium disabled:opacity-50"
     >
-      {status === "sending" ? "Notifying..." : "Notify Guardian"}
+      {status === "sending" ? t.notifying : t.notifyButton}
     </button>
   );
 }
