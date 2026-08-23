@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { listBracelets } from "@/actions/bracelets";
+import DeactivateButton from "./deactivate-button";
 
 export default async function DashboardPage() {
   const { bracelets } = await listBracelets();
@@ -16,9 +17,12 @@ export default async function DashboardPage() {
 
       <ul className="flex flex-col gap-3">
         {bracelets.map((b) => (
-          <li key={b.id} className="border rounded-lg p-4">
-            <p className="font-medium">{b.child_first_name}</p>
-            <p className="text-sm text-gray-500">Status: {b.status}</p>
+          <li key={b.id} className="border rounded-lg p-4 flex justify-between items-center">
+            <div>
+              <p className="font-medium">{b.child_first_name}</p>
+              <p className="text-sm text-gray-500">Status: {b.status}</p>
+            </div>
+            {b.status === "active" && <DeactivateButton braceletId={b.id} />}
           </li>
         ))}
       </ul>

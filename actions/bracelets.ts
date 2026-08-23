@@ -51,3 +51,25 @@ export async function activateBracelet(code: string, childFirstName: string) {
 
   return { success: true };
 }
+export async function deactivateBracelet(braceletId: string) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, message: "Not logged in." };
+  }
+
+  const { data, error } = await supabase.rpc("deactivate_bracelet", {
+    bracelet_id: braceletId,
+  });
+
+  if (error || !data) {
+    return {
+      success: false,
+      message: "Could not deactivate this bracelet.",
+    };
+  }
+
+  return { success: true };
+}
