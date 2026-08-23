@@ -77,3 +77,44 @@ export async function updateBackupEmail(email: string) {
 
   return { success: true };
 }
+export async function requestReauthOtp() {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user || !user.phone) {
+    return { success: false, message: "Not logged in." };
+  }
+
+  const { error } = await supabase.auth.signInWithOtp({
+    phone: user.phone,
+  });
+
+  if (error) {
+    return { success: false, message: error.message };
+  }
+
+  return { success: true, phone: user.phone };
+}
+
+export async function confirmReauthOtp(otp: string) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user || !user.phone) {
+    return { success: false, message: "Not logged in." };
+  }
+
+  const { error } = await supabase.auth.verifyOtp({
+    phone: user.phone,
+    token: otp,
+    type: "sms",
+  });
+
+  if (error) {
+    return { success: false, message: "Invalid code." };
+  }
+
+  return { success: true };
+}
