@@ -49,3 +49,31 @@ export async function verifyOtp(phone: string, otp: string) {
 
   return { success: true };
 }
+export async function updateBackupEmail(email: string) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, message: "Not logged in." };
+  }
+
+  const trimmedEmail = email.trim();
+
+  // Basic email format check
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(trimmedEmail)) {
+    return { success: false, message: "Please enter a valid email." };
+  }
+
+  const { error } = await supabase
+    .from("guardians")
+    .update({ backup_email: trimmedEmail })
+    .eq("id", user.id);
+
+  if (error) {
+    return { success: false, message: "Could not save email." };
+  }
+
+  return { success: true };
+}

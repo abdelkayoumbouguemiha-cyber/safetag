@@ -26,6 +26,12 @@ export default async function DashboardPage() {
           </li>
         ))}
       </ul>
+      <Link
+        href="/dashboard/settings"
+        className="text-blue-600 text-sm text-center"
+      >
+        Account Settings
+      </Link>
 
       <Link
         href="/dashboard/add-bracelet"
