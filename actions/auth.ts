@@ -24,7 +24,7 @@ export async function verifyOtp(phone: string, otp: string) {
 
   const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
 
-  const { error } = await supabase.auth.verifyOtp({
+  const { error, data } = await supabase.auth.verifyOtp({
     phone: formattedPhone,
     token: otp,
     type: "sms",
@@ -32,6 +32,19 @@ export async function verifyOtp(phone: string, otp: string) {
 
   if (error) {
     return { success: false, message: error.message };
+  }
+
+  // Ensure a matching row exists in our guardians table.
+  // Supabase Auth creates the auth.users row automatically,
+  // but our own guardians table needs its own row too.
+  if (data.user) {
+    await supabase.from("guardians").upsert(
+      {
+        id: data.user.id,
+        phone: formattedPhone,
+      },
+      { onConflict: "id" }
+    );
   }
 
   return { success: true };

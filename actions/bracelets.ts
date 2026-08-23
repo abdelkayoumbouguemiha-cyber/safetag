@@ -22,3 +22,32 @@ export async function listBracelets() {
 
   return { success: true, bracelets: data };
 }
+export async function activateBracelet(code: string, childFirstName: string) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, message: "Not logged in." };
+  }
+
+  const sanitizedName = childFirstName.trim().slice(0, 50);
+
+  if (!sanitizedName) {
+    return { success: false, message: "Please enter a name." };
+  }
+
+  const { data, error } = await supabase.rpc("activate_bracelet", {
+    bracelet_id: code,
+    new_child_name: sanitizedName,
+  });
+
+  if (error || !data) {
+    return {
+      success: false,
+      message: "This code is invalid or already activated.",
+    };
+  }
+
+  return { success: true };
+}
