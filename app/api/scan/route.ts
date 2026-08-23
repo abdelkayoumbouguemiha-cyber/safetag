@@ -75,6 +75,14 @@ export async function POST(request: Request) {
 
   // Notification pipeline (push/SMS/email) will be wired in Milestone 4 —
   // for now, we just confirm the scan was recorded.
+  // Trigger the notification pipeline
+  const { notifyGuardian } = await import("@/lib/notifications/notify");
+  try {
+    await notifyGuardian(scanLog.id, code);
+  } catch (err) {
+    console.error("Notification pipeline error:", err);
+  }
+
   return NextResponse.json({
     status: "queued",
     scan_log_id: scanLog.id,
