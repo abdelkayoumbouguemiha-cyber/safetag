@@ -1,3 +1,4 @@
+import EnablePush from "./enable-push";
 import Link from "next/link";
 import { listBracelets } from "@/actions/bracelets";
 import DeactivateButton from "./deactivate-button";
@@ -8,7 +9,7 @@ export default async function DashboardPage() {
   return (
     <main className="flex min-h-screen flex-col p-6 gap-4">
       <h1 className="text-2xl font-bold">Your Bracelets</h1>
-
+      <EnablePush />
       {bracelets.length === 0 && (
         <p className="text-gray-600">
           You haven&apos;t activated any bracelets yet.

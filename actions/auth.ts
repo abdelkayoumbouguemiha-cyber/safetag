@@ -1,54 +1,173 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
-export async function requestOtp(phone: string) {
-  const supabase = await createClient();
+function generateOtp(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
-  // Ensure phone is in E.164 format (e.g. +213777762416)
-  const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
+function normalizePhone(phone: string): string {
+  return phone.startsWith("+") ? phone : `+${phone}`;
+}
 
-  const { error } = await supabase.auth.signInWithOtp({
-    phone: formattedPhone,
+function syntheticEmailFor(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  return `${digits}@safetag.internal`;
+}
+
+async function storeOtp(phone: string): Promise<void> {
+  const admin = createAdminClient();
+  const code = generateOtp();
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+  await admin.from("otp_codes").insert({
+    phone,
+    code,
+    expires_at: expiresAt,
   });
 
-  if (error) {
-    return { success: false, message: error.message };
-  }
+  // DEV MODE: log the code instead of sending a real SMS.
+  // Replace this with a real SMS provider call before the pilot (Milestone 7).
+  console.log(`\n🔐 OTP for ${phone}: ${code}\n`);
+}
 
+async function checkOtp(phone: string, code: string): Promise<boolean> {
+  const admin = createAdminClient();
+
+  const { data: otpRecord } = await admin
+    .from("otp_codes")
+    .select("id")
+    .eq("phone", phone)
+    .eq("code", code)
+    .eq("used", false)
+    .gt("expires_at", new Date().toISOString())
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!otpRecord) return false;
+
+  await admin.from("otp_codes").update({ used: true }).eq("id", otpRecord.id);
+  return true;
+}
+
+// ---- Login flow ----
+
+export async function requestOtp(phone: string) {
+  const formattedPhone = normalizePhone(phone);
+  await storeOtp(formattedPhone);
   return { success: true };
 }
 
 export async function verifyOtp(phone: string, otp: string) {
-  const supabase = await createClient();
+  const formattedPhone = normalizePhone(phone);
 
-  const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
-
-  const { error, data } = await supabase.auth.verifyOtp({
-    phone: formattedPhone,
-    token: otp,
-    type: "sms",
-  });
-
-  if (error) {
-    return { success: false, message: error.message };
+  const valid = await checkOtp(formattedPhone, otp);
+  if (!valid) {
+    return { success: false, message: "Invalid or expired code." };
   }
 
-  // Ensure a matching row exists in our guardians table.
-  // Supabase Auth creates the auth.users row automatically,
-  // but our own guardians table needs its own row too.
-  if (data.user) {
-    await supabase.from("guardians").upsert(
-      {
-        id: data.user.id,
-        phone: formattedPhone,
-      },
-      { onConflict: "id" }
-    );
+  const admin = createAdminClient();
+  const syntheticEmail = syntheticEmailFor(formattedPhone);
+
+  // If this phone already has a guardian row (from earlier testing),
+  // backfill the synthetic email onto that SAME auth user so we don't
+  // create a duplicate identity and orphan their existing bracelets.
+  const { data: existingGuardian } = await admin
+    .from("guardians")
+    .select("id")
+    .eq("phone", formattedPhone)
+    .maybeSingle();
+
+  if (existingGuardian?.id) {
+    await admin.auth.admin.updateUserById(existingGuardian.id, {
+      email: syntheticEmail,
+      email_confirm: true,
+    });
+  }
+
+  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+    type: "magiclink",
+    email: syntheticEmail,
+  });
+
+  if (linkError || !linkData?.properties?.hashed_token) {
+    return { success: false, message: "Could not sign in." };
+  }
+
+  const supabase = await createClient();
+  const { data: sessionData, error: verifyError } = await supabase.auth.verifyOtp({
+    token_hash: linkData.properties.hashed_token,
+    type: "email",
+  });
+
+  if (verifyError || !sessionData.user) {
+    return { success: false, message: "Could not sign in." };
+  }
+
+  await supabase.from("guardians").upsert(
+    { id: sessionData.user.id, phone: formattedPhone },
+    { onConflict: "id" }
+  );
+
+  return { success: true };
+}
+
+// ---- Re-auth flow (for sensitive actions like deactivation) ----
+
+export async function requestReauthOtp() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, message: "Not logged in." };
+  }
+
+  const admin = createAdminClient();
+  const { data: guardian } = await admin
+    .from("guardians")
+    .select("phone")
+    .eq("id", user.id)
+    .single();
+
+  if (!guardian?.phone) {
+    return { success: false, message: "No phone on file." };
+  }
+
+  await storeOtp(guardian.phone);
+  return { success: true, phone: guardian.phone };
+}
+
+export async function confirmReauthOtp(otp: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, message: "Not logged in." };
+  }
+
+  const admin = createAdminClient();
+  const { data: guardian } = await admin
+    .from("guardians")
+    .select("phone")
+    .eq("id", user.id)
+    .single();
+
+  if (!guardian?.phone) {
+    return { success: false, message: "No phone on file." };
+  }
+
+  const valid = await checkOtp(guardian.phone, otp);
+  if (!valid) {
+    return { success: false, message: "Invalid code." };
   }
 
   return { success: true };
 }
+
+// ---- Backup email ----
+
 export async function updateBackupEmail(email: string) {
   const supabase = await createClient();
 
@@ -60,7 +179,6 @@ export async function updateBackupEmail(email: string) {
 
   const trimmedEmail = email.trim();
 
-  // Basic email format check
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(trimmedEmail)) {
     return { success: false, message: "Please enter a valid email." };
@@ -73,47 +191,6 @@ export async function updateBackupEmail(email: string) {
 
   if (error) {
     return { success: false, message: "Could not save email." };
-  }
-
-  return { success: true };
-}
-export async function requestReauthOtp() {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user || !user.phone) {
-    return { success: false, message: "Not logged in." };
-  }
-
-  const { error } = await supabase.auth.signInWithOtp({
-    phone: user.phone,
-  });
-
-  if (error) {
-    return { success: false, message: error.message };
-  }
-
-  return { success: true, phone: user.phone };
-}
-
-export async function confirmReauthOtp(otp: string) {
-  const supabase = await createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user || !user.phone) {
-    return { success: false, message: "Not logged in." };
-  }
-
-  const { error } = await supabase.auth.verifyOtp({
-    phone: user.phone,
-    token: otp,
-    type: "sms",
-  });
-
-  if (error) {
-    return { success: false, message: "Invalid code." };
   }
 
   return { success: true };
