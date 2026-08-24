@@ -21,26 +21,33 @@ export default function EnablePush() {
 
   async function handleEnable() {
     try {
+      console.log("Step 1: getting service worker registration");
       const registration = await navigator.serviceWorker.ready;
+      console.log("Step 2: requesting permission");
       const permission = await Notification.requestPermission();
+      console.log("Permission result:", permission);
 
       if (permission !== "granted") {
         setStatus("denied");
         return;
       }
 
+      console.log("Step 3: subscribing to push");
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(
           process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
         ),
       });
+      console.log("Subscription created:", subscription);
 
       const json = subscription.toJSON();
-      await savePushSubscription({
+      console.log("Step 4: saving subscription", json);
+      const saveResult = await savePushSubscription({
         endpoint: json.endpoint!,
         keys: { p256dh: json.keys!.p256dh, auth: json.keys!.auth },
       });
+      console.log("Save result:", saveResult);
 
       setStatus("enabled");
     } catch (err) {
