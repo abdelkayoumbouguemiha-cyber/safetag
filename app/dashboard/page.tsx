@@ -1,14 +1,19 @@
+import RealtimeListener from "./realtime-listener";
+import { createClient } from "@/lib/supabase/server";
 import EnablePush from "./enable-push";
 import Link from "next/link";
 import { listBracelets } from "@/actions/bracelets";
 import DeactivateButton from "./deactivate-button";
 
 export default async function DashboardPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   const { bracelets } = await listBracelets();
 
   return (
     <main className="flex min-h-screen flex-col p-6 gap-4">
       <h1 className="text-2xl font-bold">Your Bracelets</h1>
+      {user && <RealtimeListener guardianId={user.id} />}  
       <EnablePush />
       {bracelets.length === 0 && (
         <p className="text-gray-600">
