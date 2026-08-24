@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import webpush from "./web-push";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -32,8 +33,37 @@ export async function notifyGuardian(scanLogId: string, braceletId: string) {
   }
 
   const attempts: NotifyResult[] = [];
+  let pushSucceeded = false;
 
-  if (guardian.backup_email) {
+  // Step 1: try push first (fastest, free)
+  const { data: subscriptions } = await supabase
+    .from("push_subscriptions")
+    .select("endpoint, p256dh, auth")
+    .eq("guardian_id", bracelet.guardian_id);
+
+  if (subscriptions && subscriptions.length > 0) {
+    for (const sub of subscriptions) {
+      try {
+        await webpush.sendNotification(
+          {
+            endpoint: sub.endpoint,
+            keys: { p256dh: sub.p256dh, auth: sub.auth },
+          },
+          JSON.stringify({
+            title: "SafeTag Alert",
+            body: `${bracelet.child_first_name}'s bracelet was just scanned.`,
+          })
+        );
+        pushSucceeded = true;
+      } catch {
+        // individual subscription may be expired — continue trying others
+      }
+    }
+    attempts.push({ channel: "push", status: pushSucceeded ? "sent" : "failed" });
+  }
+
+  // Step 2: fallback to email if push failed or wasn't available
+  if (!pushSucceeded && guardian.backup_email) {
     try {
       await resend.emails.send({
         from: "SafeTag <onboarding@resend.dev>",
