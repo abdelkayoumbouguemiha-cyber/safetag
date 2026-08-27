@@ -1,8 +1,13 @@
 import { Resend } from "resend";
+import twilio from "twilio";
 import webpush from "./web-push";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const twilioClient = twilio(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
 
 type NotifyResult = {
   channel: "push" | "sms" | "email";
@@ -34,6 +39,7 @@ export async function notifyGuardian(scanLogId: string, braceletId: string) {
 
   const attempts: NotifyResult[] = [];
   let pushSucceeded = false;
+  let emailSucceeded = false;
 
   // Step 1: try push first (fastest, free)
   const { data: subscriptions } = await supabase
@@ -72,10 +78,29 @@ export async function notifyGuardian(scanLogId: string, braceletId: string) {
         text: `${bracelet.child_first_name}'s SafeTag bracelet was just scanned. Someone may be trying to help reunite you. Check your SafeTag dashboard for details.`,
       });
       attempts.push({ channel: "email", status: "sent" });
+      emailSucceeded = true;
     } catch {
       attempts.push({ channel: "email", status: "failed" });
     }
   }
+  // Step 3: SMS fallback — DISABLED for now.
+  // Twilio Trial requires pre-approved Content Templates for SMS,
+  // and Trial accounts don't have access to Content Template Builder.
+  // Re-enable this once on a paid Twilio account (Milestone 7).
+// Step 3: final fallback to SMS if both push and email failed
+//  if (!pushSucceeded && !emailSucceeded && guardian.phone) {
+//    try {
+//      await twilioClient.messages.create({
+//        body: `SafeTag: ${bracelet.child_first_name}'s bracelet was just scanned. Check your dashboard.`,
+//        from: process.env.TWILIO_PHONE_NUMBER,
+//        to: guardian.phone,
+//      });
+//      attempts.push({ channel: "sms", status: "sent" });
+//    } catch (err) {
+//      console.error("SMS send error:", err);
+//      attempts.push({ channel: "sms", status: "failed" });
+//    }
+//  }
 
   for (const attempt of attempts) {
     await supabase.from("notifications").insert({
