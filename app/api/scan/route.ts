@@ -82,7 +82,10 @@ export async function POST(request: Request) {
   } catch (err) {
     console.error("Notification pipeline error:", err);
   }
-
+  const { flagIfSuspicious } = await import("@/lib/notifications/flag-suspicious");
+  await flagIfSuspicious(code, ip).catch((err) =>
+    console.error("Flag check error:", err)
+  );
   return NextResponse.json({
     status: "queued",
     scan_log_id: scanLog.id,
