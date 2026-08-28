@@ -65,3 +65,29 @@ export async function getAdminStats() {
     scanned: scanned ?? 0,
   };
 }
+export async function getFlaggedScans() {
+  await requireAdmin();
+
+  const admin = createAdminClient();
+
+  const { data, error } = await admin
+    .from("flagged_scans")
+    .select("id, bracelet_id, reason, reviewed, created_at")
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (error) return { flags: [] };
+  return { flags: data };
+}
+
+export async function markFlagReviewed(flagId: string) {
+  await requireAdmin();
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("flagged_scans")
+    .update({ reviewed: true })
+    .eq("id", flagId);
+
+  return { success: !error };
+}

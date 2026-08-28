@@ -1,8 +1,10 @@
-import { getAdminStats } from "@/actions/admin";
+import { getAdminStats, getFlaggedScans } from "@/actions/admin";
 import GenerateCodesForm from "./generate-codes-form";
+import FlaggedScansList from "./flagged-scans-list";
 
 export default async function AdminPage() {
   const stats = await getAdminStats();
+  const { flags } = await getFlaggedScans();
 
   return (
     <main className="flex min-h-screen flex-col p-6 gap-6">
@@ -24,6 +26,7 @@ export default async function AdminPage() {
       </div>
 
       <GenerateCodesForm />
+      <FlaggedScansList flags={flags} />
     </main>
   );
 }
