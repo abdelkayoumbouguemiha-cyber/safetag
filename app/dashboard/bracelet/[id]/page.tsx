@@ -10,11 +10,23 @@ export default async function BraceletDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
+  const { data: { user } } = await supabase.auth.getUser();
+
   const { data: bracelet } = await supabase
     .from("children_bracelets")
-    .select("child_first_name, status")
+    .select("child_first_name, status, guardian_id")
     .eq("id", id)
     .single();
+
+  // Explicit ownership check — the public RLS policy (for the finder
+  // flow) would otherwise let any authenticated user view this data.
+  if (!bracelet || bracelet.guardian_id !== user?.id) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center p-6">
+        <p className="text-gray-600">Bracelet not found.</p>
+      </main>
+    );
+  }
 
   const { scans } = await getScanHistory(id);
 
