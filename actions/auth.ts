@@ -57,7 +57,7 @@ async function checkOtp(phone: string, code: string): Promise<boolean> {
 export async function requestOtp(phone: string) {
   const formattedPhone = normalizePhone(phone);
   await storeOtp(formattedPhone);
-  return { success: true };
+  return { success: true as const, message: undefined as string | undefined };
 }
 
 export async function verifyOtp(phone: string, otp: string) {
