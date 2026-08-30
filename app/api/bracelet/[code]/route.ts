@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { braceletCodeSchema } from "@/lib/validation/bracelet";
 
 export async function GET(
@@ -17,7 +17,11 @@ export async function GET(
     );
   }
 
-  const supabase = await createClient();
+  // Use the admin client here — this endpoint needs to distinguish
+  // "not found" vs "unactivated" vs "inactive" internally, which
+  // requires seeing rows that the public RLS policy alone wouldn't
+  // return. The response itself stays minimal regardless.
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from("children_bracelets")
@@ -28,10 +32,7 @@ export async function GET(
   // Deliberately generic: whether the code truly doesn't exist,
   // or exists but is unactivated, we return the same 404 —
   // this prevents leaking which codes are "real."
-  if (error) {
-  console.error("Supabase error:", error);
-}
-if (error || !data || data.status === "unactivated") {
+  if (error || !data || data.status === "unactivated") {
     return NextResponse.json(
       { error: "not_found", message: "This code is not recognized." },
       { status: 404 }
