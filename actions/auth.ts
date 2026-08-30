@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isRateLimited } from "@/lib/rate-limit";
 
 function generateOtp(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -56,12 +57,23 @@ async function checkOtp(phone: string, code: string): Promise<boolean> {
 
 export async function requestOtp(phone: string) {
   const formattedPhone = normalizePhone(phone);
+
+  // Rate limit OTP requests per phone number to prevent SMS-bombing abuse
+  if (isRateLimited(`otp-request-${formattedPhone}`, 5, 60_000)) {
+    return { success: false, message: "Too many attempts. Please wait a minute and try again." };
+  }
+
   await storeOtp(formattedPhone);
   return { success: true as const, message: undefined as string | undefined };
 }
 
 export async function verifyOtp(phone: string, otp: string) {
   const formattedPhone = normalizePhone(phone);
+
+  // Rate limit OTP verification attempts per phone number to prevent brute-force
+  if (isRateLimited(`otp-verify-${formattedPhone}`, 5, 60_000)) {
+    return { success: false, message: "Too many attempts. Please wait a minute and try again." };
+  }
 
   const valid = await checkOtp(formattedPhone, otp);
   if (!valid) {
@@ -135,6 +147,10 @@ export async function requestReauthOtp() {
     return { success: false, message: "No phone on file." };
   }
 
+  if (isRateLimited(`otp-request-${guardian.phone}`, 5, 60_000)) {
+    return { success: false, message: "Too many attempts. Please wait a minute and try again." };
+  }
+
   await storeOtp(guardian.phone);
   return { success: true, phone: guardian.phone };
 }
@@ -156,6 +172,10 @@ export async function confirmReauthOtp(otp: string) {
 
   if (!guardian?.phone) {
     return { success: false, message: "No phone on file." };
+  }
+
+  if (isRateLimited(`otp-verify-${guardian.phone}`, 5, 60_000)) {
+    return { success: false, message: "Too many attempts. Please wait a minute and try again." };
   }
 
   const valid = await checkOtp(guardian.phone, otp);
