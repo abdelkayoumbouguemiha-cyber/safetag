@@ -91,3 +91,17 @@ export async function markFlagReviewed(flagId: string) {
 
   return { success: !error };
 }
+export async function getUnactivatedBracelets() {
+  await requireAdmin();
+
+  const admin = createAdminClient();
+
+  const { data, error } = await admin
+    .from("children_bracelets")
+    .select("id, created_at")
+    .eq("status", "unactivated")
+    .order("created_at", { ascending: false });
+
+  if (error) return { bracelets: [] };
+  return { bracelets: data };
+}
