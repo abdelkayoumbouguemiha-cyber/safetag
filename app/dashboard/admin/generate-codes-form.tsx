@@ -25,36 +25,46 @@ export default function GenerateCodesForm() {
   }
 
   return (
-    <div className="border rounded-lg p-4 flex flex-col gap-3">
-      <h2 className="font-semibold">Generate Bracelet Codes</h2>
-
-      <div className="flex gap-2 items-center">
-        <input
-          type="number"
-          min={1}
-          max={1000}
-          value={count}
-          onChange={(e) => setCount(Number(e.target.value))}
-          className="border rounded px-3 py-2 w-24"
-        />
+    <div className="flex flex-col gap-4">
+      <div className="flex items-end gap-3">
+        <label className="flex flex-col gap-1.5">
+          <span className="text-sm text-[#5C6B70]">Count</span>
+          <input
+            type="number"
+            min={1}
+            max={1000}
+            value={count}
+            onChange={(e) => setCount(Number(e.target.value))}
+            className="w-24 border border-[#DCE1DF] bg-white px-3 py-2 text-sm focus:border-[#13232D] focus:outline-none"
+            style={{ fontFamily: "var(--font-plex-mono)" }}
+          />
+        </label>
         <button
           onClick={handleGenerate}
           disabled={loading}
-          className="bg-blue-600 text-white px-4 py-2 rounded font-medium disabled:opacity-50"
+          className="border border-[#13232D] bg-[#13232D] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0B171F] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {loading ? "Generating..." : "Generate"}
+          {loading ? "Generating…" : "Generate"}
         </button>
       </div>
 
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {error && (
+        <p className="border-l-2 border-[#8C3B33] pl-3 text-sm text-[#8C3B33]">
+          {error}
+        </p>
+      )}
 
       {ids && (
-        <div>
-          <p className="text-sm text-green-600 mb-2">Generated {ids.length} codes:</p>
+        <div className="border-l-2 border-[#2C6E5C] pl-3">
+          <p className="mb-2 text-sm text-[#2C6E5C]">
+            {ids.length} code{ids.length === 1 ? "" : "s"} generated
+          </p>
           <textarea
             readOnly
             value={ids.join("\n")}
-            className="w-full h-40 text-xs font-mono border rounded p-2"
+            rows={6}
+            className="w-full border border-[#DCE1DF] bg-[#F6F7F6] p-3 text-xs focus:outline-none"
+            style={{ fontFamily: "var(--font-plex-mono)" }}
           />
         </div>
       )}
