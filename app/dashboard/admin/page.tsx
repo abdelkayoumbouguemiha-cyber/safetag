@@ -31,9 +31,9 @@ export default async function AdminPage() {
       </header>
 
       <section className="mb-10 grid grid-cols-3 divide-x divide-[#DCE1DF] border border-[#DCE1DF] bg-white">
-        <StatCell label="Bracelets" value={stats.total} />
-        <StatCell label="Activated" value={stats.activated} />
-        <StatCell label="Scans logged" value={stats.scanned} />
+        <StatCell label="Bracelets" value={stats.total} href="/dashboard/admin/bracelets" />
+        <StatCell label="Activated" value={stats.activated} href="/dashboard/admin/bracelets" />
+        <StatCell label="Scans logged" value={stats.scanned} href="/dashboard/admin/scans" />
       </section>
 
       <section className="mb-10">
@@ -74,9 +74,17 @@ export default async function AdminPage() {
   );
 }
 
-function StatCell({ label, value }: { label: string; value: number }) {
+function StatCell({
+  label,
+  value,
+  href,
+}: {
+  label: string;
+  value: number;
+  href: string;
+}) {
   return (
-    <div className="px-5 py-5">
+    <Link href={href} className="block px-5 py-5 transition-colors hover:bg-[#F6F7F6]">
       <p
         className="text-3xl font-medium"
         style={{ fontFamily: "var(--font-plex-mono)" }}
@@ -84,6 +92,6 @@ function StatCell({ label, value }: { label: string; value: number }) {
         {value}
       </p>
       <p className="mt-1 text-sm text-[#5C6B70]">{label}</p>
-    </div>
+    </Link>
   );
 }

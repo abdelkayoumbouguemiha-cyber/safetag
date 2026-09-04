@@ -105,3 +105,31 @@ export async function getUnactivatedBracelets() {
   if (error) return { bracelets: [] };
   return { bracelets: data };
 }
+export async function getAllBraceletsDetailed() {
+  await requireAdmin();
+
+  const admin = createAdminClient();
+
+  const { data, error } = await admin
+    .from("children_bracelets")
+    .select("id, child_first_name, status, guardian_id, created_at, activated_at")
+    .order("created_at", { ascending: false });
+
+  if (error) return { bracelets: [] };
+  return { bracelets: data };
+}
+
+export async function getAllScansDetailed() {
+  await requireAdmin();
+
+  const admin = createAdminClient();
+
+  const { data, error } = await admin
+    .from("scan_logs")
+    .select("id, bracelet_id, ip_address, consent_given, created_at, children_bracelets(child_first_name)")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error) return { scans: [] };
+  return { scans: data };
+}
