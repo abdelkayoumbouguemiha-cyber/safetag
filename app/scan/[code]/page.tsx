@@ -17,6 +17,22 @@ async function getBraceletInfo(code: string) {
   return { childFirstName: data.child_first_name as string };
 }
 
+function LanguageBar({ locale }: { locale: string }) {
+  return (
+    <div className="flex gap-3 text-xs text-gray-400">
+      <a href="?lang=ar" className={locale === "ar" ? "underline font-medium text-gray-600" : ""}>
+        العربية
+      </a>
+      <a href="?lang=fr" className={locale === "fr" ? "underline font-medium text-gray-600" : ""}>
+        Français
+      </a>
+      <a href="?lang=en" className={locale === "en" ? "underline font-medium text-gray-600" : ""}>
+        English
+      </a>
+    </div>
+  );
+}
+
 export default async function ScanPage({
   params,
   searchParams,
@@ -41,7 +57,8 @@ export default async function ScanPage({
 
   if ("inactive" in result) {
     return (
-      <main dir={dir} className="flex min-h-screen flex-col items-center justify-center p-6 text-center">
+      <main dir={dir} className="flex min-h-screen flex-col items-center justify-center p-6 text-center gap-4">
+        <LanguageBar locale={locale} />
         <h1 className="text-xl font-semibold">{t.inactiveBracelet}</h1>
       </main>
     );
@@ -49,6 +66,7 @@ export default async function ScanPage({
 
   return (
     <main dir={dir} className="flex min-h-screen flex-col items-center justify-center p-6 text-center gap-4">
+      <LanguageBar locale={locale} />
       <h1 className="text-2xl font-bold">{t.lostChild(result.childFirstName)}</h1>
       <p className="text-gray-600">{t.tapToNotify}</p>
       <ScanForm code={code} locale={locale} />
