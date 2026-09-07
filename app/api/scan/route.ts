@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   const forwardedFor = request.headers.get("x-forwarded-for");
   const ip = forwardedFor?.split(",")[0]?.trim() ?? "unknown";
 
-  if (await isRateLimitedDb(`scan-${ip}`)) {
+  if (await isRateLimitedDb(`scan-${ip}`, 5, 60_000)) {
     return NextResponse.json(
       {
         error: "rate_limited",
@@ -22,7 +22,6 @@ export async function POST(request: Request) {
   // Step 2: validate the request body
   const body = await request.json().catch(() => null);
   const parsed = scanRequestSchema.safeParse(body);
-
   if (!parsed.success) {
     return NextResponse.json(
       { error: "invalid_request", message: "Missing or invalid fields." },
@@ -31,6 +30,20 @@ export async function POST(request: Request) {
   }
 
   const { code, consent_location, lat, lng } = parsed.data;
+
+  // Step 2b: guard against notification flood for this specific bracelet —
+  // even if requests come from many different IPs (e.g. via VPNs), a single
+  // bracelet shouldn't trigger more than N guardian notifications per hour.
+  if (await isRateLimitedDb(`bracelet-${code}`, 15, 60 * 60 * 1000)) {
+    return NextResponse.json(
+      {
+        error: "rate_limited",
+        message: "This bracelet has been scanned too many times recently.",
+        fallback_hotline: "1021",
+      },
+      { status: 429 }
+    );
+  }
 
   // Step 3: use the admin client — this write must go through server-side
   // logic only (rate limiting, validation), never directly from the browser.
@@ -73,8 +86,6 @@ export async function POST(request: Request) {
     );
   }
 
-  // Notification pipeline (push/SMS/email) will be wired in Milestone 4 —
-  // for now, we just confirm the scan was recorded.
   // Trigger the notification pipeline
   const { notifyGuardian } = await import("@/lib/notifications/notify");
   try {
@@ -82,10 +93,12 @@ export async function POST(request: Request) {
   } catch (err) {
     console.error("Notification pipeline error:", err);
   }
+
   const { flagIfSuspicious } = await import("@/lib/notifications/flag-suspicious");
   await flagIfSuspicious(code, ip).catch((err) =>
     console.error("Flag check error:", err)
   );
+
   return NextResponse.json({
     status: "queued",
     scan_log_id: scanLog.id,
