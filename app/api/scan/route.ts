@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { scanRequestSchema } from "@/lib/validation/scan";
-import { isRateLimited } from "@/lib/rate-limit";
+import { isRateLimitedDb } from "@/lib/rate-limit-db";
 
 export async function POST(request: Request) {
   // Step 1: identify the caller by IP for rate limiting
   const forwardedFor = request.headers.get("x-forwarded-for");
   const ip = forwardedFor?.split(",")[0]?.trim() ?? "unknown";
 
-  if (isRateLimited(ip)) {
+  if (await isRateLimitedDb(`scan-${ip}`)) {
     return NextResponse.json(
       {
         error: "rate_limited",
