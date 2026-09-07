@@ -14,3 +14,8 @@
 - See docs/algeria-data-residency-legal-research.md
 - **Fix**: add explicit consent screen + privacy policy before public guardian signups; consult a lawyer.
 
+
+## 4. In-memory rate limiter unreliable on serverless — FIXED
+- Was: lib/rate-limit.ts used an in-memory Map, unreliable across Vercel serverless invocations.
+- Fixed: replaced with lib/rate-limit-db.ts (Supabase-backed), applied to /api/scan and all OTP flows in actions/auth.ts.
+- Verified working via manual curl test — 5 allowed, subsequent requests correctly blocked with 429.
