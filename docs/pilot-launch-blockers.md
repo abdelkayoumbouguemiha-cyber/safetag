@@ -19,3 +19,8 @@
 - Was: lib/rate-limit.ts used an in-memory Map, unreliable across Vercel serverless invocations.
 - Fixed: replaced with lib/rate-limit-db.ts (Supabase-backed), applied to /api/scan and all OTP flows in actions/auth.ts.
 - Verified working via manual curl test — 5 allowed, subsequent requests correctly blocked with 429.
+
+## 5. Notification flood via multiple IPs — FIXED
+- Was: rate limiting only applied per-IP, so an attacker using multiple IPs (VPNs) could still flood a guardian with notifications.
+- Fixed: added a second rate limit layer keyed by bracelet_id (15 scans/hour), independent of IP.
+- Verified working via manual test — 5 scans recorded correctly under the bracelet-specific key.
