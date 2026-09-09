@@ -46,7 +46,7 @@ export const homeTranslations = {
 export const loginTranslations = {
   ar: {
     title: "تسجيل الدخول إلى SafeTag",
-    phonePlaceholder: "213777762416",
+    phonePlaceholder: "you@example.com",
     sendCode: "إرسال الرمز",
     sending: "جارِ الإرسال...",
     enterCode: "أدخل الرمز المرسل إلى",
@@ -56,7 +56,7 @@ export const loginTranslations = {
   },
   fr: {
     title: "Connexion à SafeTag",
-    phonePlaceholder: "213777762416",
+    phonePlaceholder: "you@example.com",
     sendCode: "Envoyer le code",
     sending: "Envoi en cours...",
     enterCode: "Entrez le code envoyé au",

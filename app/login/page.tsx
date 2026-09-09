@@ -13,8 +13,8 @@ function LoginForm() {
   const t = loginTranslations[locale];
   const dir = locale === "ar" ? "rtl" : "ltr";
 
-  const [step, setStep] = useState<"phone" | "otp">("phone");
-  const [phone, setPhone] = useState("");
+  const [step, setStep] = useState<"email" | "otp">("email");
+  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -22,7 +22,7 @@ function LoginForm() {
   async function handleRequestOtp() {
     setLoading(true);
     setError(null);
-    const result = await requestOtp(phone);
+    const result = await requestOtp(email);
     setLoading(false);
 
     if (result.success) {
@@ -35,7 +35,7 @@ function LoginForm() {
   async function handleVerifyOtp() {
     setLoading(true);
     setError(null);
-    const result = await verifyOtp(phone, otp);
+    const result = await verifyOtp(email, otp);
     setLoading(false);
 
     if (result.success) {
@@ -53,18 +53,18 @@ function LoginForm() {
 
       <h1 className="text-2xl font-bold">{t.title}</h1>
 
-      {step === "phone" && (
+      {step === "email" && (
         <>
           <input
-            type="tel"
+            type="email"
             placeholder={t.phonePlaceholder}
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="border rounded-lg px-4 py-2 w-64"
           />
           <button
             onClick={handleRequestOtp}
-            disabled={loading || !phone}
+            disabled={loading || !email}
             className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium disabled:opacity-50"
           >
             {loading ? t.sending : t.sendCode}
@@ -75,7 +75,7 @@ function LoginForm() {
       {step === "otp" && (
         <>
           <p className="text-gray-600">
-            {t.enterCode} {phone}
+            {t.enterCode} {email}
           </p>
           <input
             type="text"
