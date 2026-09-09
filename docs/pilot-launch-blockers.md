@@ -32,3 +32,12 @@
   behind NODE_ENV === "development" (never true on Vercel).
 - Verified: dashboard login still works end-to-end; otp_codes.code column
   now contains a 64-char hash, not the plaintext code.
+
+## 7. Spoofable X-Forwarded-For header — FIXED
+- Was: /api/scan trusted the client-controllable X-Forwarded-For header for
+  rate limiting, allowing an attacker to bypass IP-based limits by
+  sending fake values.
+- Fixed: now uses x-vercel-forwarded-for, which Vercel's infrastructure
+  sets and cannot be spoofed by the client. Falls back to x-forwarded-for
+  only in local development (NODE_ENV === "development"), never in production.
+- Verified: scan endpoint still works locally with correct IP logging.
