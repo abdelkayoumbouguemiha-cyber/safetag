@@ -5,8 +5,16 @@ import { isRateLimitedDb } from "@/lib/rate-limit-db";
 
 export async function POST(request: Request) {
   // Step 1: identify the caller by IP for rate limiting
-  const forwardedFor = request.headers.get("x-forwarded-for");
-  const ip = forwardedFor?.split(",")[0]?.trim() ?? "unknown";
+  // Vercel writes x-vercel-forwarded-for at the infrastructure level —
+  // unlike x-forwarded-for, a client cannot spoof this value.
+  // Fall back to x-forwarded-for only for local dev (where Vercel's
+  // header doesn't exist), never trust it in production.
+  const trustedForwardedFor = request.headers.get("x-vercel-forwarded-for");
+  const devFallback =
+    process.env.NODE_ENV === "development"
+      ? request.headers.get("x-forwarded-for")
+      : null;
+  const ip = (trustedForwardedFor ?? devFallback)?.split(",")[0]?.trim() ?? "unknown";
 
   if (await isRateLimitedDb(`scan-${ip}`, 5, 60_000)) {
     return NextResponse.json(
