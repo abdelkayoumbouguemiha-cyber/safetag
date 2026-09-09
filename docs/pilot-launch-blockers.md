@@ -24,3 +24,11 @@
 - Was: rate limiting only applied per-IP, so an attacker using multiple IPs (VPNs) could still flood a guardian with notifications.
 - Fixed: added a second rate limit layer keyed by bracelet_id (15 scans/hour), independent of IP.
 - Verified working via manual test — 5 scans recorded correctly under the bracelet-specific key.
+
+## 6. OTP stored in plaintext + logged in production — FIXED
+- Was: OTP codes stored as plain 6-digit strings in otp_codes table, and
+  console.log'd unconditionally (would appear in Vercel production logs).
+- Fixed: codes now hashed with SHA-256 before storage; console.log gated
+  behind NODE_ENV === "development" (never true on Vercel).
+- Verified: dashboard login still works end-to-end; otp_codes.code column
+  now contains a 64-char hash, not the plaintext code.
