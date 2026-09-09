@@ -41,3 +41,16 @@
   sets and cannot be spoofed by the client. Falls back to x-forwarded-for
   only in local development (NODE_ENV === "development"), never in production.
 - Verified: scan endpoint still works locally with correct IP logging.
+
+## 8. Phone-based login blocked by Twilio limitations — RESOLVED (architecture change)
+- Was: login required SMS OTP via Twilio, which was blocked by Trial account
+  Content Template restrictions (see item 2). This meant admin login would
+  become impossible in production once console.log was correctly restricted
+  to development-only (H1 fix).
+- Resolved: switched login to email-based OTP via Resend (already working,
+  free tier). Phone number is now optional contact info, saved separately
+  via /dashboard/settings, not required for login.
+- Impact: item 2 (SMS notification channel) is now lower priority — email
+  is the primary guardian-facing channel for both login and scan alerts.
+  SMS can still be added later as a scan-notification fallback once on a
+  paid Twilio plan, but is no longer a login blocker.
