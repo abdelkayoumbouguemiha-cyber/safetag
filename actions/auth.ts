@@ -4,6 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isRateLimitedDb } from "@/lib/rate-limit-db";
 import { createHash } from "crypto";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 function generateOtp(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -13,45 +16,48 @@ function hashOtp(code: string): string {
   return createHash("sha256").update(code).digest("hex");
 }
 
-function normalizePhone(phone: string): string {
-  return phone.startsWith("+") ? phone : `+${phone}`;
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
 }
 
-function syntheticEmailFor(phone: string): string {
-  const digits = phone.replace(/\D/g, "");
-  return `${digits}@safetag.internal`;
-}
-
-async function storeOtp(phone: string): Promise<void> {
+async function storeAndSendOtp(email: string): Promise<{ success: boolean; message?: string }> {
   const admin = createAdminClient();
   const code = generateOtp();
   const hashedCode = hashOtp(code);
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
   await admin.from("otp_codes").insert({
-    phone,
+    phone: email, // reusing the existing "phone" column as a generic identifier
     code: hashedCode,
     expires_at: expiresAt,
   });
 
-  // DEV MODE ONLY: log the plaintext code so we can log in locally without
-  // a real SMS provider wired up. This never runs in production — Vercel
-  // sets VERCEL_ENV=production/preview, which is never "development".
-  // Replace this whole flow with a real SMS provider call before the pilot
-  // (Milestone 7) — at that point this branch (and the need for it) goes away.
+  // DEV MODE: also log locally for convenience — never runs in production.
   if (process.env.NODE_ENV === "development") {
-    console.log(`\n🔐 OTP for ${phone}: ${code}\n`);
+    console.log(`\n🔐 OTP for ${email}: ${code}\n`);
+  }
+
+  try {
+    await resend.emails.send({
+      from: "SafeTag <onboarding@resend.dev>",
+      to: email,
+      subject: "Your SafeTag login code",
+      text: `Your login code is: ${code}\n\nThis code expires in 10 minutes.`,
+    });
+    return { success: true };
+  } catch {
+    return { success: false, message: "Could not send the code. Please try again." };
   }
 }
 
-async function checkOtp(phone: string, code: string): Promise<boolean> {
+async function checkOtp(email: string, code: string): Promise<boolean> {
   const admin = createAdminClient();
   const hashedCode = hashOtp(code);
 
   const { data: otpRecord } = await admin
     .from("otp_codes")
     .select("id")
-    .eq("phone", phone)
+    .eq("phone", email)
     .eq("code", hashedCode)
     .eq("used", false)
     .gt("expires_at", new Date().toISOString())
@@ -67,48 +73,68 @@ async function checkOtp(phone: string, code: string): Promise<boolean> {
 
 // ---- Login flow ----
 
-export async function requestOtp(phone: string) {
-  const formattedPhone = normalizePhone(phone);
+export async function requestOtp(email: string) {
+  const normalizedEmail = normalizeEmail(email);
 
-  if (await isRateLimitedDb(`otp-request-${formattedPhone}`, 5, 60_000)) {
+  if (await isRateLimitedDb(`otp-request-${normalizedEmail}`, 5, 60_000)) {
     return { success: false, message: "Too many attempts. Please wait a minute and try again." };
   }
 
-  await storeOtp(formattedPhone);
-  return { success: true as const, message: undefined as string | undefined };
+  const result = await storeAndSendOtp(normalizedEmail);
+  return result;
 }
 
-export async function verifyOtp(phone: string, otp: string) {
-  const formattedPhone = normalizePhone(phone);
+export async function verifyOtp(email: string, otp: string) {
+  const normalizedEmail = normalizeEmail(email);
 
-  if (await isRateLimitedDb(`otp-verify-${formattedPhone}`, 5, 60_000)) {
+  if (await isRateLimitedDb(`otp-verify-${normalizedEmail}`, 5, 60_000)) {
     return { success: false, message: "Too many attempts. Please wait a minute and try again." };
   }
 
-  const valid = await checkOtp(formattedPhone, otp);
+  const valid = await checkOtp(normalizedEmail, otp);
   if (!valid) {
     return { success: false, message: "Invalid or expired code." };
   }
 
   const admin = createAdminClient();
-  const syntheticEmail = syntheticEmailFor(formattedPhone);
 
   const { data: existingGuardian } = await admin
     .from("guardians")
     .select("id")
-    .eq("phone", formattedPhone)
+    .eq("backup_email", normalizedEmail)
     .maybeSingle();
 
+  let userId: string;
+
   if (existingGuardian?.id) {
-    await admin.auth.admin.updateUserById(existingGuardian.id, {
-      email: syntheticEmail,
+    userId = existingGuardian.id;
+    await admin.auth.admin.updateUserById(userId, {
+      email: normalizedEmail,
       email_confirm: true,
     });
+  } else {
+    // Check if an auth user already exists with this email (edge case: guardian
+    // row was deleted but auth user wasn't, or first-ever login for this email)
+    const { data: existingUsers } = await admin.auth.admin.listUsers();
+    const existingAuthUser = existingUsers.users.find((u) => u.email === normalizedEmail);
+
+    if (existingAuthUser) {
+      userId = existingAuthUser.id;
+    } else {
+      const { data: created, error: createError } = await admin.auth.admin.createUser({
+        email: normalizedEmail,
+        email_confirm: true,
+      });
+      if (createError || !created.user) {
+        return { success: false, message: "Could not create account." };
+      }
+      userId = created.user.id;
+    }
   }
 
   const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
     type: "magiclink",
-    email: syntheticEmail,
+    email: normalizedEmail,
   });
 
   if (linkError || !linkData?.properties?.hashed_token) {
@@ -126,7 +152,7 @@ export async function verifyOtp(phone: string, otp: string) {
   }
 
   await supabase.from("guardians").upsert(
-    { id: sessionData.user.id, phone: formattedPhone },
+    { id: sessionData.user.id, backup_email: normalizedEmail },
     { onConflict: "id" }
   );
 
@@ -146,20 +172,22 @@ export async function requestReauthOtp() {
   const admin = createAdminClient();
   const { data: guardian } = await admin
     .from("guardians")
-    .select("phone")
+    .select("backup_email")
     .eq("id", user.id)
     .single();
 
-  if (!guardian?.phone) {
-    return { success: false, message: "No phone on file." };
+  if (!guardian?.backup_email) {
+    return { success: false, message: "No email on file." };
   }
 
-  if (await isRateLimitedDb(`otp-request-${guardian.phone}`, 5, 60_000)) {
+  if (await isRateLimitedDb(`otp-request-${guardian.backup_email}`, 5, 60_000)) {
     return { success: false, message: "Too many attempts. Please wait a minute and try again." };
   }
 
-  await storeOtp(guardian.phone);
-  return { success: true, phone: guardian.phone };
+  const result = await storeAndSendOtp(guardian.backup_email);
+  if (!result.success) return result;
+
+  return { success: true, message: undefined as string | undefined, email: guardian.backup_email as string | undefined };
 }
 
 export async function confirmReauthOtp(otp: string) {
@@ -173,19 +201,19 @@ export async function confirmReauthOtp(otp: string) {
   const admin = createAdminClient();
   const { data: guardian } = await admin
     .from("guardians")
-    .select("phone")
+    .select("backup_email")
     .eq("id", user.id)
     .single();
 
-  if (!guardian?.phone) {
-    return { success: false, message: "No phone on file." };
+  if (!guardian?.backup_email) {
+    return { success: false, message: "No email on file." };
   }
 
-  if (await isRateLimitedDb(`otp-verify-${guardian.phone}`, 5, 60_000)) {
+  if (await isRateLimitedDb(`otp-verify-${guardian.backup_email}`, 5, 60_000)) {
     return { success: false, message: "Too many attempts. Please wait a minute and try again." };
   }
 
-  const valid = await checkOtp(guardian.phone, otp);
+  const valid = await checkOtp(guardian.backup_email, otp);
   if (!valid) {
     return { success: false, message: "Invalid code." };
   }
@@ -193,9 +221,9 @@ export async function confirmReauthOtp(otp: string) {
   return { success: true };
 }
 
-// ---- Backup email ----
+// ---- Optional phone number (for direct contact by finders) ----
 
-export async function updateBackupEmail(email: string) {
+export async function updatePhone(phone: string) {
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -204,20 +232,19 @@ export async function updateBackupEmail(email: string) {
     return { success: false, message: "Not logged in." };
   }
 
-  const trimmedEmail = email.trim();
+  const trimmedPhone = phone.trim();
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(trimmedEmail)) {
-    return { success: false, message: "Please enter a valid email." };
+  if (trimmedPhone && !/^\+?[0-9]{8,15}$/.test(trimmedPhone)) {
+    return { success: false, message: "Please enter a valid phone number." };
   }
 
   const { error } = await supabase
     .from("guardians")
-    .update({ backup_email: trimmedEmail })
+    .update({ phone: trimmedPhone || null })
     .eq("id", user.id);
 
   if (error) {
-    return { success: false, message: "Could not save email." };
+    return { success: false, message: "Could not save phone number." };
   }
 
   return { success: true };
