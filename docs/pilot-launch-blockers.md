@@ -54,3 +54,13 @@
   is the primary guardian-facing channel for both login and scan alerts.
   SMS can still be added later as a scan-notification fallback once on a
   paid Twilio plan, but is no longer a login blocker.
+
+## 9. Reauth OTP not bound to specific action — FIXED (M1)
+- Was: confirmReauthOtp() returned a bare { success: true }, with no link
+  to a specific bracelet or time window — theoretically allowing a single
+  OTP confirmation to be reused across multiple sensitive actions.
+- Fixed: confirmReauthOtp() now creates a single-use, 2-minute-expiry
+  confirmation token (confirmed_reauth_actions table) tied to the guardian.
+  deactivateBracelet() now requires and consumes this token.
+- Verified: full deactivate flow tested end-to-end; confirmation row
+  correctly marked used=true after successful deactivation.
