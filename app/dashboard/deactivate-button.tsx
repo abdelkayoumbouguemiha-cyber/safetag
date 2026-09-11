@@ -29,13 +29,13 @@ export default function DeactivateButton({ braceletId }: { braceletId: string })
     setStep("loading");
 
     const otpResult = await confirmReauthOtp(otp);
-    if (!otpResult.success) {
+    if (!otpResult.success || !otpResult.confirmationId) {
       setError("Invalid code.");
       setStep("otp");
       return;
     }
 
-    const result = await deactivateBracelet(braceletId);
+    const result = await deactivateBracelet(braceletId, otpResult.confirmationId);
     if (result.success) {
       router.refresh();
       setStep("idle");

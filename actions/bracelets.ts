@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function listBracelets() {
   const supabase = await createClient();
@@ -51,7 +52,7 @@ export async function activateBracelet(code: string, childFirstName: string) {
 
   return { success: true };
 }
-export async function deactivateBracelet(braceletId: string) {
+export async function deactivateBracelet(braceletId: string, confirmationId: string) {
   const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -59,6 +60,27 @@ export async function deactivateBracelet(braceletId: string) {
   if (!user) {
     return { success: false, message: "Not logged in." };
   }
+
+  // Verify the reauth confirmation is valid, belongs to this user,
+  // unused, and not expired — then consume it (single use).
+  const admin = createAdminClient();
+  const { data: confirmation } = await admin
+    .from("confirmed_reauth_actions")
+    .select("id")
+    .eq("id", confirmationId)
+    .eq("guardian_id", user.id)
+    .eq("used", false)
+    .gt("expires_at", new Date().toISOString())
+    .maybeSingle();
+
+  if (!confirmation) {
+    return { success: false, message: "Please confirm with a fresh code." };
+  }
+
+  await admin
+    .from("confirmed_reauth_actions")
+    .update({ used: true })
+    .eq("id", confirmationId);
 
   const { data, error } = await supabase.rpc("deactivate_bracelet", {
     bracelet_id: braceletId,

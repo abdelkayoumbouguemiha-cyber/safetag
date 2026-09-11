@@ -218,7 +218,14 @@ export async function confirmReauthOtp(otp: string) {
     return { success: false, message: "Invalid code." };
   }
 
-  return { success: true };
+  const confirmationId = crypto.randomUUID();
+  await admin.from("confirmed_reauth_actions").insert({
+    id: confirmationId,
+    guardian_id: user.id,
+    expires_at: new Date(Date.now() + 2 * 60 * 1000).toISOString(),
+  });
+
+  return { success: true, confirmationId };
 }
 
 // ---- Optional phone number (for direct contact by finders) ----
