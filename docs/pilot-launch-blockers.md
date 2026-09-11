@@ -64,3 +64,9 @@
   deactivateBracelet() now requires and consumes this token.
 - Verified: full deactivate flow tested end-to-end; confirmation row
   correctly marked used=true after successful deactivation.
+
+## Remaining Medium items (deferred, low urgency for solo-founder stage)
+- M2: hardcoded ADMIN_USER_ID — fine until a second admin is added
+- M4: no explicit session-refresh middleware — Supabase handles this reasonably by default
+- M5: GPS consent UX polish — functional as-is
+- M6: expired push subscriptions not cleaned up — minor storage/performance, not security
