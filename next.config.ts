@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
           // Disable browser features this app doesn't use, reducing attack surface.
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), payment=()",
+            value: "camera=(self), microphone=(), payment=()",
           },
         ],
       },
