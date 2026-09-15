@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Poppins, Inter, IBM_Plex_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import RegisterServiceWorker from "./register-sw";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const poppins = Poppins({
+  weight: ["500", "600", "700"],
+  variable: "--font-poppins",
   subsets: ["latin"],
 });
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+const plexMono = IBM_Plex_Mono({
+  weight: ["400", "500"],
+  variable: "--font-plex-mono",
   subsets: ["latin"],
 });
 
@@ -17,15 +23,19 @@ export const metadata: Metadata = {
   title: "SafeTag",
   description: "QR-code child safety bracelet platform",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/brand/logo.jpeg",
+    apple: "/brand/logo.jpeg",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${poppins.variable} ${inter.variable} ${plexMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col font-sans">
         <RegisterServiceWorker />
         {children}
         <Analytics />
