@@ -24,8 +24,12 @@ export const metadata: Metadata = {
   description: "QR-code child safety bracelet platform",
   manifest: "/manifest.json",
   icons: {
-    icon: "/brand/logo.jpeg",
-    apple: "/brand/logo.jpeg",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/brand/icons/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/brand/icons/icon-512.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: "/brand/icons/apple-touch-icon.png",
   },
 };
 
