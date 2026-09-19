@@ -3,6 +3,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isRateLimitedDb } from "@/lib/rate-limit-db";
+import { cookies } from "next/headers";
+import { LOCALE_COOKIE, LOCALES, type Locale } from "@/lib/i18n/locale";
 import { createHash } from "crypto";
 import { Resend } from "resend";
 
@@ -155,6 +157,31 @@ export async function verifyOtp(email: string, otp: string) {
     { id: sessionData.user.id, backup_email: normalizedEmail },
     { onConflict: "id" }
   );
+
+  // مزامنة تفضيل اللغة بين الكوكي وقاعدة البيانات
+  const cookieStore = await cookies();
+  const cookieLocale = cookieStore.get(LOCALE_COOKIE)?.value;
+
+  if (cookieLocale && LOCALES.includes(cookieLocale as Locale)) {
+    await admin
+      .from("guardians")
+      .update({ preferred_locale: cookieLocale })
+      .eq("id", sessionData.user.id);
+  } else {
+    const { data: guardianRow } = await admin
+      .from("guardians")
+      .select("preferred_locale")
+      .eq("id", sessionData.user.id)
+      .maybeSingle();
+
+    if (guardianRow?.preferred_locale) {
+      cookieStore.set(LOCALE_COOKIE, guardianRow.preferred_locale, {
+        maxAge: 60 * 60 * 24 * 365,
+        path: "/",
+        sameSite: "lax",
+      });
+    }
+  }
 
   return { success: true };
 }
