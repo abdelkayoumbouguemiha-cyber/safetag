@@ -18,15 +18,15 @@ export default function SettingsPage() {
       setStatus("saved");
     } else {
       setStatus("error");
-      setError(result.message ?? "Something went wrong.");
+      setError(result.message ?? "حدث خطأ ما.");
     }
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 gap-4">
-      <h1 className="text-2xl font-bold">Account Settings</h1>
-      <p className="text-gray-600 text-center max-w-sm">
-        Optionally add a phone number so a finder can contact you directly.
+    <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-bg p-6">
+      <h1 className="font-display text-2xl font-semibold text-brand-green-dark">إعدادات الحساب</h1>
+      <p className="max-w-sm text-center text-ink-muted">
+        أضيفوا رقم هاتف (اختياري) ليتمكن الشخص الذي يجد طفلكم من التواصل معكم مباشرة.
       </p>
 
       <input
@@ -34,19 +34,20 @@ export default function SettingsPage() {
         placeholder="+213 777 762 416"
         value={phone}
         onChange={(e) => setPhone(e.target.value)}
-        className="border rounded-lg px-4 py-2 w-72"
+        className="w-72 rounded-lg border border-line bg-white px-4 py-2.5 text-ink outline-none focus:border-brand-green"
+        dir="ltr"
       />
 
       <button
         onClick={handleSave}
         disabled={status === "saving" || !phone}
-        className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium disabled:opacity-50"
+        className="w-72 rounded-xl bg-brand-green px-6 py-3 font-medium text-white shadow-sm transition-colors hover:bg-brand-green-dark disabled:opacity-50"
       >
-        {status === "saving" ? "Saving..." : "Save Phone Number"}
+        {status === "saving" ? "جارِ الحفظ..." : "حفظ رقم الهاتف"}
       </button>
 
-      {status === "saved" && <p className="text-green-600 text-sm">Saved!</p>}
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {status === "saved" && <p className="text-sm text-brand-green-dark">تم الحفظ!</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
     </main>
   );
 }

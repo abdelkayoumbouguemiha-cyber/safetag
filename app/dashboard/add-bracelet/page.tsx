@@ -6,9 +6,6 @@ import { activateBracelet } from "@/actions/bracelets";
 import QrScanner from "qr-scanner";
 
 function extractCodeFromScan(raw: string): string {
-  // The QR encodes a full URL like https://.../scan/<uuid> — extract the
-  // UUID if that's what was scanned, otherwise assume the raw text is
-  // already just the code.
   const match = raw.match(/scan\/([a-f0-9-]{36})/i);
   return match ? match[1] : raw.trim();
 }
@@ -35,7 +32,6 @@ export default function AddBraceletPage() {
     setError(null);
     setScanning(true);
 
-    // Wait a tick so the <video> element is mounted before we attach the scanner.
     setTimeout(async () => {
       if (!videoRef.current) return;
 
@@ -55,7 +51,7 @@ export default function AddBraceletPage() {
         scannerRef.current = scanner;
         await scanner.start();
       } catch {
-        setError("Could not access camera. You can still enter the code manually below.");
+        setError("تعذّر الوصول للكاميرا. يمكنكم إدخال الكود يدوياً بالأسفل.");
         setScanning(false);
       }
     }, 0);
@@ -78,63 +74,63 @@ export default function AddBraceletPage() {
     if (result.success) {
       router.push("/dashboard");
     } else {
-      setError(result.message ?? "Something went wrong.");
+      setError(result.message ?? "حدث خطأ ما.");
     }
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 gap-4">
-      <h1 className="text-2xl font-bold">Activate a Bracelet</h1>
+    <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-bg p-6">
+      <h1 className="font-display text-2xl font-semibold text-brand-green-dark">تفعيل سوار</h1>
 
       {scanning ? (
-        <div className="flex flex-col items-center gap-3 w-full max-w-sm">
+        <div className="flex w-full max-w-sm flex-col items-center gap-3">
           <video
             ref={videoRef}
-            className="w-full rounded-lg border"
+            className="w-full rounded-2xl border border-line"
           />
           <button
             onClick={stopScanning}
-            className="text-sm text-gray-600 underline"
+            className="text-sm text-ink-muted underline underline-offset-4"
           >
-            Cancel scanning
+            إلغاء المسح
           </button>
         </div>
       ) : (
         <button
           onClick={startScanning}
-          className="flex items-center gap-2 border border-blue-600 text-blue-600 px-6 py-3 rounded-lg font-medium"
+          className="flex items-center gap-2 rounded-xl border border-brand-green px-6 py-3 font-medium text-brand-green-dark transition-colors hover:bg-brand-green hover:text-white"
         >
-          📷 Scan QR Code
+          📷 مسح رمز QR
         </button>
       )}
 
-      <p className="text-sm text-gray-400">— or enter manually —</p>
+      <p className="text-sm text-ink-muted">— أو أدخل يدوياً —</p>
 
       <input
         type="text"
-        placeholder="Activation code"
+        placeholder="كود التفعيل"
         value={code}
         onChange={(e) => setCode(e.target.value)}
-        className="border rounded-lg px-4 py-2 w-72"
+        className="w-72 rounded-lg border border-line bg-white px-4 py-2.5 text-ink outline-none focus:border-brand-green"
       />
 
       <input
         type="text"
-        placeholder="Child's first name"
+        placeholder="الاسم الأول للطفل"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        className="border rounded-lg px-4 py-2 w-72"
+        className="w-72 rounded-lg border border-line bg-white px-4 py-2.5 text-ink outline-none focus:border-brand-green"
       />
 
       <button
         onClick={handleSubmit}
         disabled={loading || !code || !name}
-        className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium disabled:opacity-50"
+        className="w-72 rounded-xl bg-brand-green px-6 py-3 font-medium text-white shadow-sm transition-colors hover:bg-brand-green-dark disabled:opacity-50"
       >
-        {loading ? "Activating..." : "Activate"}
+        {loading ? "جارِ التفعيل..." : "تفعيل"}
       </button>
 
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
     </main>
   );
 }

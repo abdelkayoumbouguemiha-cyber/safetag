@@ -17,27 +17,27 @@ export default function AcknowledgeButtons({ scanLogId }: { scanLogId: string })
   }
 
   if (status === "acknowledged") {
-    return <p className="text-sm text-blue-600 mt-2">On my way ✓</p>;
+    return <p className="mt-2 text-sm text-brand-green-dark">فالطريق ✓</p>;
   }
   if (status === "resolved") {
-    return <p className="text-sm text-green-600 mt-2">Resolved ✓</p>;
+    return <p className="mt-2 text-sm text-brand-green-dark">تم الحل ✓</p>;
   }
 
   return (
-    <div className="flex gap-2 mt-2">
+    <div className="mt-2 flex gap-2">
       <button
         onClick={() => handleClick("acknowledged")}
         disabled={loading}
-        className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded disabled:opacity-50"
+        className="rounded-lg bg-brand-green-light/15 px-3 py-1 text-xs font-medium text-brand-green-dark disabled:opacity-50"
       >
-        On my way
+        فالطريق
       </button>
       <button
         onClick={() => handleClick("resolved")}
         disabled={loading}
-        className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded disabled:opacity-50"
+        className="rounded-lg bg-brand-green px-3 py-1 text-xs font-medium text-white disabled:opacity-50"
       >
-        Resolved
+        تم الحل
       </button>
     </div>
   );

@@ -2,8 +2,6 @@
 
 import { QRCodeSVG } from "qrcode.react";
 
-// Always use the production URL for printed codes — these are meant
-// to be scanned by real phones, never localhost.
 const SITE_URL = "https://safetag-el99-delta.vercel.app";
 
 type Bracelet = {
@@ -14,21 +12,21 @@ type Bracelet = {
 export default function PrintGrid({ bracelets }: { bracelets: Bracelet[] }) {
   return (
     <main className="p-6">
-      <div className="print:hidden mb-6 flex justify-between items-center">
-        <h1 className="text-2xl font-bold">
-          Print Codes ({bracelets.length} unactivated)
+      <div className="mb-6 flex items-center justify-between print:hidden">
+        <h1 className="font-display text-2xl font-semibold text-brand-green-dark">
+          طباعة الأكواد ({bracelets.length} غير مفعّل)
         </h1>
         <button
           onClick={() => window.print()}
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium"
+          className="rounded-xl bg-brand-green px-6 py-3 font-medium text-white shadow-sm transition-colors hover:bg-brand-green-dark"
         >
-          Print / Save as PDF
+          طباعة / حفظ كـ PDF
         </button>
       </div>
 
       {bracelets.length === 0 && (
-        <p className="print:hidden text-gray-500">
-          No unactivated bracelets. Generate some first from the admin page.
+        <p className="text-ink-muted print:hidden">
+          لا توجد أساور غير مفعّلة. ولّد بعض الأكواد أولاً من صفحة الأدمن.
         </p>
       )}
 
@@ -36,11 +34,13 @@ export default function PrintGrid({ bracelets }: { bracelets: Bracelet[] }) {
         {bracelets.map((b) => (
           <div
             key={b.id}
-            className="border rounded-lg p-4 flex flex-col items-center gap-2 break-inside-avoid"
+            className="flex flex-col items-center gap-2 break-inside-avoid rounded-2xl border border-line p-4"
           >
             <QRCodeSVG value={`${SITE_URL}/scan/${b.id}`} size={160} />
-            <p className="text-xs font-mono text-center break-all">{b.id}</p>
-            <p className="text-xs text-gray-400">SafeTag</p>
+            <p className="break-all text-center text-xs text-ink" style={{ fontFamily: "var(--font-mono)" }}>
+              {b.id}
+            </p>
+            <p className="text-xs text-ink-muted">SafeTag</p>
           </div>
         ))}
       </div>
