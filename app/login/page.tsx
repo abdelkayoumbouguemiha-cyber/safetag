@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, Suspense } from "react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { requestOtp, verifyOtp } from "@/actions/auth";
 import { loginTranslations, type SiteLocale } from "@/lib/i18n/site-translations";
@@ -28,7 +29,7 @@ function LoginForm() {
     if (result.success) {
       setStep("otp");
     } else {
-      setError(result.message ?? "Something went wrong.");
+      setError(result.message ?? "حدث خطأ ما.");
     }
   }
 
@@ -41,61 +42,87 @@ function LoginForm() {
     if (result.success) {
       router.push("/dashboard");
     } else {
-      setError(result.message ?? "Invalid code.");
+      setError(result.message ?? "الكود غير صحيح.");
     }
   }
 
   return (
-    <main dir={dir} className="flex min-h-screen flex-col items-center justify-center p-6 gap-4">
+    <main dir={dir} className="flex min-h-screen flex-col items-center justify-center bg-bg px-6 py-12">
       <div className="absolute top-6 right-6">
         <LanguageToggle current={locale} />
       </div>
 
-      <h1 className="text-2xl font-bold">{t.title}</h1>
+      <div className="mb-8 flex flex-col items-center gap-3">
+        <Image src="/brand/logo.jpeg" alt="SafeTag" width={64} height={64} className="rounded-2xl shadow-sm" />
+        <h1 className="font-display text-xl font-semibold text-brand-green-dark">{t.title}</h1>
+      </div>
 
-      {step === "email" && (
-        <>
-          <input
-            type="email"
-            placeholder={t.phonePlaceholder}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="border rounded-lg px-4 py-2 w-64"
-          />
-          <button
-            onClick={handleRequestOtp}
-            disabled={loading || !email}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium disabled:opacity-50"
-          >
-            {loading ? t.sending : t.sendCode}
-          </button>
-        </>
-      )}
+      <div className="w-full max-w-sm rounded-2xl border border-line bg-surface p-8 shadow-sm">
+        <div className="mb-6 flex items-center gap-2">
+          <StepDot active />
+          <div className={`h-0.5 flex-1 rounded-full ${step === "otp" ? "bg-brand-green" : "bg-line"}`} />
+          <StepDot active={step === "otp"} />
+        </div>
 
-      {step === "otp" && (
-        <>
-          <p className="text-gray-600">
-            {t.enterCode} {email}
-          </p>
-          <input
-            type="text"
-            placeholder={t.codePlaceholder}
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            className="border rounded-lg px-4 py-2 w-64"
-          />
-          <button
-            onClick={handleVerifyOtp}
-            disabled={loading || !otp}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium disabled:opacity-50"
-          >
-            {loading ? t.verifying : t.verify}
-          </button>
-        </>
-      )}
+        {step === "email" && (
+          <div className="flex flex-col gap-4">
+            <input
+              type="email"
+              placeholder={t.phonePlaceholder}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-lg border border-line bg-white px-4 py-2.5 text-ink outline-none transition-colors focus:border-brand-green focus:ring-2 focus:ring-brand-green-light/30"
+            />
+            <button
+              onClick={handleRequestOtp}
+              disabled={loading || !email}
+              className="w-full rounded-lg bg-brand-green px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-green-dark disabled:opacity-50"
+            >
+              {loading ? t.sending : t.sendCode}
+            </button>
+          </div>
+        )}
 
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+        {step === "otp" && (
+          <div className="flex flex-col gap-4">
+            <p className="text-sm text-ink-muted">
+              {t.enterCode} <span className="font-medium text-ink">{email}</span>
+            </p>
+            <input
+              type="text"
+              placeholder={t.codePlaceholder}
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              className="w-full rounded-lg border border-line bg-white px-4 py-2.5 text-center text-lg tracking-widest text-ink outline-none transition-colors focus:border-brand-green focus:ring-2 focus:ring-brand-green-light/30"
+              style={{ fontFamily: "var(--font-mono)" }}
+            />
+            <button
+              onClick={handleVerifyOtp}
+              disabled={loading || !otp}
+              className="w-full rounded-lg bg-brand-green px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-green-dark disabled:opacity-50"
+            >
+              {loading ? t.verifying : t.verify}
+            </button>
+          </div>
+        )}
+
+        {error && <p className="mt-4 text-center text-sm text-danger">{error}</p>}
+      </div>
+
+      <p className="mt-6 max-w-xs text-center text-xs text-ink-muted">
+        بياناتكم محمية ولا تُشارك مع أي طرف ثالث
+      </p>
     </main>
+  );
+}
+
+function StepDot({ active }: { active: boolean }) {
+  return (
+    <span
+      className={`h-2.5 w-2.5 shrink-0 rounded-full transition-colors ${
+        active ? "bg-brand-green" : "bg-line"
+      }`}
+    />
   );
 }
 

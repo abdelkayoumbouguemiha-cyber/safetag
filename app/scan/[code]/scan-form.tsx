@@ -43,9 +43,12 @@ export default function ScanForm({ code, locale }: { code: string; locale: Local
 
   if (status === "sent") {
     return (
-      <div className="text-center">
-        <p className="text-green-600 font-medium">{t.notified}</p>
-        {hotline && <p className="text-sm text-gray-500 mt-2">{t.hotlineNote(hotline)}</p>}
+      <div className="flex flex-col items-center gap-2">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-green-light/20 text-2xl text-brand-green-dark">
+          ✓
+        </span>
+        <p className="font-medium text-brand-green-dark">{t.notified}</p>
+        {hotline && <p className="text-sm text-ink-muted">{t.hotlineNote(hotline)}</p>}
       </div>
     );
   }
@@ -53,8 +56,8 @@ export default function ScanForm({ code, locale }: { code: string; locale: Local
   if (status === "error") {
     return (
       <div className="text-center">
-        <p className="text-red-600 font-medium">{t.somethingWrong}</p>
-        {hotline && <p className="text-sm text-gray-500 mt-2">{t.callDirectly(hotline)}</p>}
+        <p className="font-medium text-danger">{t.somethingWrong}</p>
+        {hotline && <p className="mt-2 text-sm text-ink-muted">{t.callDirectly(hotline)}</p>}
       </div>
     );
   }
@@ -63,7 +66,7 @@ export default function ScanForm({ code, locale }: { code: string; locale: Local
     <button
       onClick={handleClick}
       disabled={status === "sending"}
-      className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium disabled:opacity-50"
+      className="w-full rounded-xl bg-brand-green px-6 py-4 text-base font-medium text-white shadow-sm transition-colors hover:bg-brand-green-dark disabled:opacity-50"
     >
       {status === "sending" ? t.notifying : t.notifyButton}
     </button>

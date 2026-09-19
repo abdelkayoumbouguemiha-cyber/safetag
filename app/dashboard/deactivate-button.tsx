@@ -19,7 +19,7 @@ export default function DeactivateButton({ braceletId }: { braceletId: string })
     if (result.success) {
       setStep("otp");
     } else {
-      setError(result.message ?? "Something went wrong.");
+      setError(result.message ?? "حدث خطأ ما.");
       setStep("idle");
     }
   }
@@ -30,7 +30,7 @@ export default function DeactivateButton({ braceletId }: { braceletId: string })
 
     const otpResult = await confirmReauthOtp(otp);
     if (!otpResult.success || !otpResult.confirmationId) {
-      setError("Invalid code.");
+      setError("الكود غير صحيح.");
       setStep("otp");
       return;
     }
@@ -41,7 +41,7 @@ export default function DeactivateButton({ braceletId }: { braceletId: string })
       setStep("idle");
       setOtp("");
     } else {
-      setError(result.message ?? "Something went wrong.");
+      setError(result.message ?? "حدث خطأ ما.");
       setStep("otp");
     }
   }
@@ -50,35 +50,35 @@ export default function DeactivateButton({ braceletId }: { braceletId: string })
     return (
       <button
         onClick={handleStart}
-        className="text-red-600 text-sm font-medium"
+        className="shrink-0 text-xs font-medium text-danger hover:underline"
       >
-        Deactivate
+        إلغاء التفعيل
       </button>
     );
   }
 
   if (step === "loading") {
-    return <span className="text-sm text-gray-500">...</span>;
+    return <span className="shrink-0 text-xs text-ink-muted">...</span>;
   }
 
   return (
-    <div className="flex flex-col gap-2 items-end">
-      <p className="text-xs text-gray-500">Enter the code sent to confirm</p>
+    <div className="flex shrink-0 flex-col items-end gap-2">
+      <p className="text-xs text-ink-muted">أدخل الكود المرسل للتأكيد</p>
       <input
         type="text"
         placeholder="123456"
         value={otp}
         onChange={(e) => setOtp(e.target.value)}
-        className="border rounded px-2 py-1 text-sm w-24"
+        className="w-24 rounded-lg border border-line px-2 py-1 text-sm outline-none focus:border-danger"
       />
       <button
         onClick={handleConfirm}
         disabled={!otp}
-        className="text-red-600 text-sm font-medium disabled:opacity-50"
+        className="text-xs font-medium text-danger hover:underline disabled:opacity-50"
       >
-        Confirm Deactivate
+        تأكيد الإلغاء
       </button>
-      {error && <p className="text-red-600 text-xs">{error}</p>}
+      {error && <p className="text-xs text-danger">{error}</p>}
     </div>
   );
 }

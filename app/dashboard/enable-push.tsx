@@ -21,33 +21,26 @@ export default function EnablePush() {
 
   async function handleEnable() {
     try {
-      console.log("Step 1: getting service worker registration");
       const registration = await navigator.serviceWorker.ready;
-      console.log("Step 2: requesting permission");
       const permission = await Notification.requestPermission();
-      console.log("Permission result:", permission);
 
       if (permission !== "granted") {
         setStatus("denied");
         return;
       }
 
-      console.log("Step 3: subscribing to push");
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(
           process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
         ),
       });
-      console.log("Subscription created:", subscription);
 
       const json = subscription.toJSON();
-      console.log("Step 4: saving subscription", json);
-      const saveResult = await savePushSubscription({
+      await savePushSubscription({
         endpoint: json.endpoint!,
         keys: { p256dh: json.keys!.p256dh, auth: json.keys!.auth },
       });
-      console.log("Save result:", saveResult);
 
       setStatus("enabled");
     } catch (err) {
@@ -58,15 +51,20 @@ export default function EnablePush() {
 
   if (status === "unsupported") return null;
   if (status === "enabled") {
-    return <p className="text-sm text-green-600">Push notifications enabled ✓</p>;
+    return (
+      <span className="flex items-center gap-1.5 text-xs text-brand-green-dark">
+        <span className="h-1.5 w-1.5 rounded-full bg-brand-green" />
+        التنبيهات مفعّلة
+      </span>
+    );
   }
 
   return (
     <button
       onClick={handleEnable}
-      className="text-sm text-blue-600 underline"
+      className="text-xs font-medium text-brand-green-dark underline underline-offset-4 hover:text-brand-green"
     >
-      Enable push notifications
+      تفعيل التنبيهات
     </button>
   );
 }
