@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { requestOtp, verifyOtp } from "@/actions/auth";
 import { loginTranslations } from "@/lib/i18n/site-translations";
@@ -25,10 +26,16 @@ export default function LoginPage() {
   const [step, setStep] = useState<"email" | "otp">("email");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
+  const [consentAccepted, setConsentAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function handleRequestOtp() {
+    if (!consentAccepted) {
+      setError(t.consentRequired);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     const result = await requestOtp(email);
@@ -44,7 +51,7 @@ export default function LoginPage() {
   async function handleVerifyOtp() {
     setLoading(true);
     setError(null);
-    const result = await verifyOtp(email, otp);
+    const result = await verifyOtp(email, otp, consentAccepted);
     setLoading(false);
 
     if (result.success) {
@@ -81,9 +88,32 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-lg border border-line bg-white px-4 py-2.5 text-ink outline-none transition-colors focus:border-brand-green focus:ring-2 focus:ring-brand-green-light/30"
             />
+
+            <label className="flex items-start gap-2.5 text-sm text-ink-muted">
+              <input
+                type="checkbox"
+                checked={consentAccepted}
+                onChange={(e) => {
+                  setConsentAccepted(e.target.checked);
+                  if (e.target.checked) setError(null);
+                }}
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-line accent-brand-green"
+              />
+              <span>
+                {t.consentPrefix}{" "}
+                <Link
+                  href="/privacy"
+                  target="_blank"
+                  className="font-medium text-brand-green-dark underline underline-offset-2 hover:text-brand-green"
+                >
+                  {t.consentLinkText}
+                </Link>
+              </span>
+            </label>
+
             <button
               onClick={handleRequestOtp}
-              disabled={loading || !email}
+              disabled={loading || !email || !consentAccepted}
               className="w-full rounded-lg bg-brand-green px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-green-dark disabled:opacity-50"
             >
               {loading ? t.sending : t.sendCode}

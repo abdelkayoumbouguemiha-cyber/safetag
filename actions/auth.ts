@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { isRateLimitedDb } from "@/lib/rate-limit-db";
 import { cookies } from "next/headers";
 import { LOCALE_COOKIE, LOCALES, type Locale } from "@/lib/i18n/locale";
+import { PRIVACY_POLICY_VERSION } from "@/lib/i18n/privacy-translations";
 import { createHash } from "crypto";
 import { Resend } from "resend";
 
@@ -86,11 +87,19 @@ export async function requestOtp(email: string) {
   return result;
 }
 
-export async function verifyOtp(email: string, otp: string) {
+export async function verifyOtp(email: string, otp: string, consentAccepted: boolean) {
   const normalizedEmail = normalizeEmail(email);
 
   if (await isRateLimitedDb(`otp-verify-${normalizedEmail}`, 5, 60_000)) {
     return { success: false, message: "Too many attempts. Please wait a minute and try again." };
+  }
+
+  // Explicit, informed consent is required before we create or update any
+  // guardian record — see docs/algeria-data-residency-legal-research.md.
+  // This is enforced server-side too, not just via the disabled checkbox
+  // in the UI, since client-side state can be bypassed.
+  if (!consentAccepted) {
+    return { success: false, message: "Please accept the privacy policy to continue." };
   }
 
   const valid = await checkOtp(normalizedEmail, otp);
@@ -154,7 +163,12 @@ export async function verifyOtp(email: string, otp: string) {
   }
 
   await supabase.from("guardians").upsert(
-    { id: sessionData.user.id, backup_email: normalizedEmail },
+    {
+      id: sessionData.user.id,
+      backup_email: normalizedEmail,
+      consent_accepted_at: new Date().toISOString(),
+      consent_policy_version: PRIVACY_POLICY_VERSION,
+    },
     { onConflict: "id" }
   );
 

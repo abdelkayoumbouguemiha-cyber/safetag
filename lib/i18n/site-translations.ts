@@ -91,6 +91,9 @@ export const loginTranslations: Record<Locale, {
   codePlaceholder: string;
   verify: string;
   verifying: string;
+  consentPrefix: string;
+  consentLinkText: string;
+  consentRequired: string;
 }> = {
   ar: {
     title: "تسجيل الدخول إلى SafeTag",
@@ -101,6 +104,9 @@ export const loginTranslations: Record<Locale, {
     codePlaceholder: "123456",
     verify: "تحقق",
     verifying: "جارِ التحقق...",
+    consentPrefix: "أوافق على",
+    consentLinkText: "سياسة الخصوصية",
+    consentRequired: "يجب الموافقة على سياسة الخصوصية للمتابعة.",
   },
   fr: {
     title: "Connexion à SafeTag",
@@ -111,6 +117,9 @@ export const loginTranslations: Record<Locale, {
     codePlaceholder: "123456",
     verify: "Vérifier",
     verifying: "Vérification...",
+    consentPrefix: "J'accepte la",
+    consentLinkText: "politique de confidentialité",
+    consentRequired: "Vous devez accepter la politique de confidentialité pour continuer.",
   },
   en: {
     title: "Log in to SafeTag",
@@ -121,5 +130,8 @@ export const loginTranslations: Record<Locale, {
     codePlaceholder: "123456",
     verify: "Verify",
     verifying: "Verifying...",
+    consentPrefix: "I agree to the",
+    consentLinkText: "privacy policy",
+    consentRequired: "You must accept the privacy policy to continue.",
   },
 };
