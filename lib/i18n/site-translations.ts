@@ -1,6 +1,25 @@
-export type SiteLocale = "ar" | "fr";
+import type { Locale } from "@/lib/i18n/locale";
 
-export const homeTranslations = {
+export type SiteLocale = Locale;
+
+export const homeTranslations: Record<Locale, {
+  login: string;
+  heroTitle: string;
+  heroText: string;
+  ctaLogin: string;
+  ctaContact: string;
+  howItWorks: string;
+  step1Title: string;
+  step1Text: string;
+  step2Title: string;
+  step2Text: string;
+  step3Title: string;
+  step3Text: string;
+  step4Title: string;
+  step4Text: string;
+  privacyTitle: string;
+  privacyText: string;
+}> = {
   ar: {
     login: "تسجيل دخول",
     heroTitle: "سوار الأمان الذي يُعيد طفلك إليك",
@@ -41,9 +60,38 @@ export const homeTranslations = {
     privacyText:
       "Nous n'affichons jamais le nom de famille, le numéro de téléphone, ni aucune information sensible à la personne qui scanne le code. Vos données restent toujours protégées, et nous limitons strictement ce que nous conservons.",
   },
+  en: {
+    login: "Log in",
+    heroTitle: "The safety bracelet that brings your child back to you",
+    heroText:
+      "A simple QR code on your child's bracelet — if they get lost, whoever finds them can alert you instantly, without ever seeing your personal information.",
+    ctaLogin: "I have a bracelet — Log in",
+    ctaContact: "Contact us to get a bracelet",
+    howItWorks: "How it works",
+    step1Title: "Scan the code",
+    step1Text: "Anyone who finds your child scans the QR code on the bracelet — no app to download",
+    step2Title: "We notify you instantly",
+    step2Text: "You get an immediate alert (push or email) that the bracelet was scanned",
+    step3Title: "You connect",
+    step3Text: "You can reach out to the person to arrange a meetup",
+    step4Title: "Full privacy",
+    step4Text: "Your phone number and address are never shown to whoever scans the code",
+    privacyTitle: "Your child's privacy is our priority",
+    privacyText:
+      "We never show the family name, phone number, or any sensitive information to whoever scans the code. Your personal information stays protected at all times, and we strictly limit what we store.",
+  },
 };
 
-export const loginTranslations = {
+export const loginTranslations: Record<Locale, {
+  title: string;
+  phonePlaceholder: string;
+  sendCode: string;
+  sending: string;
+  enterCode: string;
+  codePlaceholder: string;
+  verify: string;
+  verifying: string;
+}> = {
   ar: {
     title: "تسجيل الدخول إلى SafeTag",
     phonePlaceholder: "you@example.com",
@@ -63,5 +111,15 @@ export const loginTranslations = {
     codePlaceholder: "123456",
     verify: "Vérifier",
     verifying: "Vérification...",
+  },
+  en: {
+    title: "Log in to SafeTag",
+    phonePlaceholder: "you@example.com",
+    sendCode: "Send code",
+    sending: "Sending...",
+    enterCode: "Enter the code sent to",
+    codePlaceholder: "123456",
+    verify: "Verify",
+    verifying: "Verifying...",
   },
 };

@@ -1,4 +1,16 @@
-export const translations = {
+import type { Locale } from "@/lib/i18n/locale";
+
+export const translations: Record<Locale, {
+  lostChild: (name: string) => string;
+  tapToNotify: string;
+  notifyButton: string;
+  notifying: string;
+  notified: string;
+  hotlineNote: (n: string) => string;
+  somethingWrong: string;
+  callDirectly: (n: string) => string;
+  inactiveBracelet: string;
+}> = {
   ar: {
     lostChild: (name: string) => `قد يكون هذا الطفل ضائعاً — ${name}`,
     tapToNotify: "اضغط أدناه لإبلاغ الولي فوراً",
@@ -33,12 +45,3 @@ export const translations = {
     inactiveBracelet: "This bracelet is no longer active.",
   },
 };
-
-export type Locale = keyof typeof translations;
-
-export function detectLocale(acceptLanguage: string | null): Locale {
-  if (!acceptLanguage) return "ar"; // default to Arabic per your target market
-  if (acceptLanguage.includes("fr")) return "fr";
-  if (acceptLanguage.includes("ar")) return "ar";
-  return "en";
-}

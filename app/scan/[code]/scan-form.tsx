@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { translations, type Locale } from "@/lib/i18n/translations";
+import { translations } from "@/lib/i18n/translations";
+import type { Locale } from "@/lib/i18n/locale";
 
 export default function ScanForm({ code, locale }: { code: string; locale: Locale }) {
   const t = translations[locale];

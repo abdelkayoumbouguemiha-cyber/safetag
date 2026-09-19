@@ -1,26 +1,45 @@
 "use client";
 
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import type { SiteLocale } from "@/lib/i18n/site-translations";
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { setLocale } from "@/actions/locale";
+import type { Locale } from "@/lib/i18n/locale";
 
-export default function LanguageToggle({ current }: { current: SiteLocale }) {
+const OPTIONS: { value: Locale; label: string }[] = [
+  { value: "ar", label: "ع" },
+  { value: "fr", label: "Fr" },
+  { value: "en", label: "En" },
+];
+
+export default function LanguageToggle({ current }: { current: Locale }) {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
 
-  function toggle() {
-    const next: SiteLocale = current === "ar" ? "fr" : "ar";
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("lang", next);
-    router.push(`${pathname}?${params.toString()}`);
+  function handleSelect(locale: Locale) {
+    if (locale === current) return;
+
+    startTransition(async () => {
+      await setLocale(locale);
+      router.refresh();
+    });
   }
 
   return (
-    <button
-      onClick={toggle}
-      className="text-sm font-medium text-[#5C6B70] hover:text-[#13232D]"
-    >
-      {current === "ar" ? "Français" : "العربية"}
-    </button>
+    <div className="flex items-center gap-1 rounded-lg border border-line bg-surface p-0.5 text-xs">
+      {OPTIONS.map((opt) => (
+        <button
+          key={opt.value}
+          onClick={() => handleSelect(opt.value)}
+          disabled={isPending}
+          className={`rounded-md px-2.5 py-1 font-medium transition-colors ${
+            current === opt.value
+              ? "bg-brand-green text-white"
+              : "text-ink-muted hover:text-ink"
+          } disabled:opacity-50`}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
   );
 }

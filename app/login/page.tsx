@@ -1,17 +1,25 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { requestOtp, verifyOtp } from "@/actions/auth";
-import { loginTranslations, type SiteLocale } from "@/lib/i18n/site-translations";
+import { loginTranslations } from "@/lib/i18n/site-translations";
+import type { Locale } from "@/lib/i18n/locale";
 import LanguageToggle from "@/components/language-toggle";
 
-function LoginForm() {
+export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const locale: SiteLocale = searchParams.get("lang") === "fr" ? "fr" : "ar";
-  const t = loginTranslations[locale];
+  const [locale, setLocaleState] = useState<Locale>("ar");
+
+  // اللغة تُقرأ من الكوكي فالمتصفح (client-side) عند تحميل الصفحة،
+  // خاطر هاذي الصفحة "use client" وما تقدرش تستعمل getLocale() السيرفر مباشرة.
+  useEffect(() => {
+    const match = document.cookie.match(/safetag_lang=(ar|fr|en)/);
+    if (match) setLocaleState(match[1] as Locale);
+  }, []);
+
+  const t = loginTranslations[locale] ?? loginTranslations.ar;
   const dir = locale === "ar" ? "rtl" : "ltr";
 
   const [step, setStep] = useState<"email" | "otp">("email");
@@ -123,13 +131,5 @@ function StepDot({ active }: { active: boolean }) {
         active ? "bg-brand-green" : "bg-line"
       }`}
     />
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={null}>
-      <LoginForm />
-    </Suspense>
   );
 }

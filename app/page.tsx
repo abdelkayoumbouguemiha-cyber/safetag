@@ -1,16 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import { homeTranslations, type SiteLocale } from "@/lib/i18n/site-translations";
+import { homeTranslations } from "@/lib/i18n/site-translations";
+import { getLocale } from "@/lib/i18n/locale";
 import LanguageToggle from "@/components/language-toggle";
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ lang?: string }>;
-}) {
-  const { lang } = await searchParams;
-  const locale: SiteLocale = lang === "fr" ? "fr" : "ar";
-  const t = homeTranslations[locale];
+export default async function HomePage() {
+  const locale = await getLocale();
+  const t = homeTranslations[locale] ?? homeTranslations.ar;
   const dir = locale === "ar" ? "rtl" : "ltr";
 
   return (
@@ -23,7 +19,7 @@ export default async function HomePage({
         <div className="flex items-center gap-4">
           <LanguageToggle current={locale} />
           <Link
-            href={`/login?lang=${locale}`}
+            href="/login"
             className="rounded-lg border border-brand-green px-5 py-2 text-sm font-medium text-brand-green-dark transition-colors hover:bg-brand-green hover:text-white"
           >
             {t.login}
@@ -39,11 +35,12 @@ export default async function HomePage({
         <p className="max-w-md text-lg leading-relaxed text-ink-muted">{t.heroText}</p>
         <div className="mt-2 flex flex-wrap justify-center gap-3">
           <Link
-            href={`/login?lang=${locale}`}
+            href="/login"
             className="rounded-lg bg-brand-green px-7 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-green-dark"
           >
             {t.ctaLogin}
           </Link>
+          
           <a
             href="mailto:contact@safetag.dz"
             className="rounded-lg border border-line px-7 py-3 text-sm font-medium text-ink transition-colors hover:border-brand-green"

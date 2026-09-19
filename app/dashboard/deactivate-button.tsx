@@ -4,8 +4,17 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { deactivateBracelet } from "@/actions/bracelets";
 import { requestReauthOtp, confirmReauthOtp } from "@/actions/auth";
+import type { Locale } from "@/lib/i18n/locale";
+import { dashboardTranslations } from "@/lib/i18n/dashboard-translations";
 
-export default function DeactivateButton({ braceletId }: { braceletId: string }) {
+export default function DeactivateButton({
+  braceletId,
+  locale,
+}: {
+  braceletId: string;
+  locale: Locale;
+}) {
+  const t = dashboardTranslations[locale] ?? dashboardTranslations.ar;
   const router = useRouter();
   const [step, setStep] = useState<"idle" | "otp" | "loading">("idle");
   const [otp, setOtp] = useState("");
@@ -19,7 +28,7 @@ export default function DeactivateButton({ braceletId }: { braceletId: string })
     if (result.success) {
       setStep("otp");
     } else {
-      setError(result.message ?? "حدث خطأ ما.");
+      setError(result.message ?? t.genericError);
       setStep("idle");
     }
   }
@@ -30,7 +39,7 @@ export default function DeactivateButton({ braceletId }: { braceletId: string })
 
     const otpResult = await confirmReauthOtp(otp);
     if (!otpResult.success || !otpResult.confirmationId) {
-      setError("الكود غير صحيح.");
+      setError(t.invalidCode);
       setStep("otp");
       return;
     }
@@ -41,7 +50,7 @@ export default function DeactivateButton({ braceletId }: { braceletId: string })
       setStep("idle");
       setOtp("");
     } else {
-      setError(result.message ?? "حدث خطأ ما.");
+      setError(result.message ?? t.genericError);
       setStep("otp");
     }
   }
@@ -52,7 +61,7 @@ export default function DeactivateButton({ braceletId }: { braceletId: string })
         onClick={handleStart}
         className="shrink-0 text-xs font-medium text-danger hover:underline"
       >
-        إلغاء التفعيل
+        {t.deactivate}
       </button>
     );
   }
@@ -63,7 +72,7 @@ export default function DeactivateButton({ braceletId }: { braceletId: string })
 
   return (
     <div className="flex shrink-0 flex-col items-end gap-2">
-      <p className="text-xs text-ink-muted">أدخل الكود المرسل للتأكيد</p>
+      <p className="text-xs text-ink-muted">{t.enterConfirmCode}</p>
       <input
         type="text"
         placeholder="123456"
@@ -76,7 +85,7 @@ export default function DeactivateButton({ braceletId }: { braceletId: string })
         disabled={!otp}
         className="text-xs font-medium text-danger hover:underline disabled:opacity-50"
       >
-        تأكيد الإلغاء
+        {t.confirmDeactivate}
       </button>
       {error && <p className="text-xs text-danger">{error}</p>}
     </div>

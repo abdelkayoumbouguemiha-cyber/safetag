@@ -1,8 +1,9 @@
 import Image from "next/image";
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import ScanForm from "./scan-form";
-import { translations, detectLocale } from "@/lib/i18n/translations";
+import { translations } from "@/lib/i18n/translations";
+import { getLocale } from "@/lib/i18n/locale";
+import LanguageToggle from "@/components/language-toggle";
 
 async function getBraceletInfo(code: string) {
   const res = await fetch(
@@ -18,38 +19,16 @@ async function getBraceletInfo(code: string) {
   return { childFirstName: data.child_first_name as string };
 }
 
-function LanguageBar({ locale }: { locale: string }) {
-  return (
-    <div className="flex gap-4 text-xs text-ink-muted">
-      <a href="?lang=ar" className={locale === "ar" ? "font-medium text-brand-green-dark underline underline-offset-4" : "hover:text-ink"}>
-        العربية
-      </a>
-      <a href="?lang=fr" className={locale === "fr" ? "font-medium text-brand-green-dark underline underline-offset-4" : "hover:text-ink"}>
-        Français
-      </a>
-      <a href="?lang=en" className={locale === "en" ? "font-medium text-brand-green-dark underline underline-offset-4" : "hover:text-ink"}>
-        English
-      </a>
-    </div>
-  );
-}
-
 export default async function ScanPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ code: string }>;
-  searchParams: Promise<{ lang?: string }>;
 }) {
   const { code } = await params;
-  const { lang } = await searchParams;
   const result = await getBraceletInfo(code);
 
-  const headersList = await headers();
-  const locale =
-    (lang as keyof typeof translations) ??
-    detectLocale(headersList.get("accept-language"));
-  const t = translations[locale] ?? translations.en;
+  const locale = await getLocale();
+  const t = translations[locale] ?? translations.ar;
   const dir = locale === "ar" ? "rtl" : "ltr";
 
   if ("notFound" in result || "error" in result) {
@@ -59,7 +38,7 @@ export default async function ScanPage({
   if ("inactive" in result) {
     return (
       <main dir={dir} className="flex min-h-screen flex-col items-center justify-center gap-4 bg-bg p-6 text-center">
-        <LanguageBar locale={locale} />
+        <LanguageToggle current={locale} />
         <Image src="/brand/logo.jpeg" alt="SafeTag" width={56} height={56} className="rounded-2xl" />
         <h1 className="text-xl font-semibold text-ink">{t.inactiveBracelet}</h1>
       </main>
@@ -68,7 +47,7 @@ export default async function ScanPage({
 
   return (
     <main dir={dir} className="flex min-h-screen flex-col items-center justify-center gap-6 bg-bg p-6 text-center">
-      <LanguageBar locale={locale} />
+      <LanguageToggle current={locale} />
 
       <Image src="/brand/logo.jpeg" alt="SafeTag" width={56} height={56} className="rounded-2xl shadow-sm" />
 
@@ -83,7 +62,6 @@ export default async function ScanPage({
         </div>
       </div>
 
-      
       <a
         href="tel:1021"
         className="text-sm text-ink-muted underline underline-offset-4 hover:text-brand-green-dark"

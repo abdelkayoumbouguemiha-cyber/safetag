@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { savePushSubscription } from "@/actions/push";
+import type { Locale } from "@/lib/i18n/locale";
+import { dashboardTranslations } from "@/lib/i18n/dashboard-translations";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -10,7 +12,8 @@ function urlBase64ToUint8Array(base64String: string) {
   return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
 }
 
-export default function EnablePush() {
+export default function EnablePush({ locale }: { locale: Locale }) {
+  const t = dashboardTranslations[locale] ?? dashboardTranslations.ar;
   const [status, setStatus] = useState<"idle" | "enabled" | "denied" | "unsupported">("idle");
 
   useEffect(() => {
@@ -54,7 +57,7 @@ export default function EnablePush() {
     return (
       <span className="flex items-center gap-1.5 text-xs text-brand-green-dark">
         <span className="h-1.5 w-1.5 rounded-full bg-brand-green" />
-        التنبيهات مفعّلة
+        {t.pushEnabled}
       </span>
     );
   }
@@ -64,7 +67,7 @@ export default function EnablePush() {
       onClick={handleEnable}
       className="text-xs font-medium text-brand-green-dark underline underline-offset-4 hover:text-brand-green"
     >
-      تفعيل التنبيهات
+      {t.enablePush}
     </button>
   );
 }
