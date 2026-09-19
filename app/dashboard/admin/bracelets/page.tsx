@@ -2,9 +2,15 @@ import Link from "next/link";
 import { getAllBraceletsDetailed } from "@/actions/admin";
 
 const statusColor: Record<string, string> = {
-  active: "bg-[#2C6E5C]",
-  inactive: "bg-[#8C3B33]",
-  unactivated: "bg-[#DCE1DF]",
+  active: "bg-brand-green-dark",
+  inactive: "bg-danger",
+  unactivated: "bg-line",
+};
+
+const statusLabel: Record<string, string> = {
+  active: "نشط",
+  inactive: "غير نشط",
+  unactivated: "غير مفعّل",
 };
 
 export default async function BraceletsDetailPage() {
@@ -14,41 +20,41 @@ export default async function BraceletsDetailPage() {
     <main className="mx-auto max-w-3xl px-6 py-10">
       <Link
         href="/dashboard/admin"
-        className="text-sm text-[#5C6B70] hover:text-[#13232D]"
+        className="text-sm text-ink-muted hover:text-ink"
       >
-        ← Back to Operations
+        → رجوع للعمليات
       </Link>
 
-      <h1 className="mt-4 mb-1 text-2xl font-semibold tracking-tight">
-        Bracelets
+      <h1 className="mt-4 mb-1 font-display text-2xl font-semibold tracking-tight text-ink">
+        الأساور
       </h1>
-      <p className="mb-8 text-sm text-[#5C6B70]">
-        {bracelets.length} total, all statuses
+      <p className="mb-8 text-sm text-ink-muted">
+        {bracelets.length} إجمالاً، كل الحالات
       </p>
 
-      <ul className="border border-[#DCE1DF] bg-white">
+      <ul className="border border-line bg-surface">
         {bracelets.map((b, i) => (
           <li
             key={b.id}
             className={`flex items-center gap-4 px-5 py-4 ${
-              i > 0 ? "border-t border-[#DCE1DF]" : ""
+              i > 0 ? "border-t border-line" : ""
             }`}
           >
             <span
-              className={`h-2 w-2 shrink-0 rounded-full ${statusColor[b.status] ?? "bg-[#DCE1DF]"}`}
+              className={`h-2 w-2 shrink-0 rounded-full ${statusColor[b.status] ?? "bg-line"}`}
               aria-hidden
             />
             <div className="flex-1">
-              <p className="text-sm">
+              <p className="text-sm text-ink">
                 {b.child_first_name ?? (
-                  <span className="text-[#5C6B70]">Unassigned</span>
+                  <span className="text-ink-muted">غير معيّن</span>
                 )}
               </p>
               <p
-                className="mt-1 text-xs text-[#5C6B70]"
-                style={{ fontFamily: "var(--font-plex-mono)" }}
+                className="mt-1 text-xs text-ink-muted"
+                style={{ fontFamily: "var(--font-mono)" }}
               >
-                {b.id.slice(0, 8)}… · {b.status} ·{" "}
+                {b.id.slice(0, 8)}… · {statusLabel[b.status] ?? b.status} ·{" "}
                 {new Date(b.created_at).toLocaleDateString()}
               </p>
             </div>

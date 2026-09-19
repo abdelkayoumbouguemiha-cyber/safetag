@@ -23,32 +23,32 @@ export default function FlaggedScansList({ flags }: { flags: Flag[] }) {
 
   if (localFlags.length === 0) {
     return (
-      <div className="border border-[#DCE1DF] bg-white px-5 py-8 text-center text-sm text-[#5C6B70]">
-        No flagged scans yet.
+      <div className="border border-line bg-surface px-5 py-8 text-center text-sm text-ink-muted">
+        لا توجد سكانات معلّمة حالياً.
       </div>
     );
   }
 
   return (
-    <ul className="border border-[#DCE1DF] bg-white">
+    <ul className="border border-line bg-surface">
       {localFlags.map((flag, i) => (
         <li
           key={flag.id}
           className={`flex items-start gap-4 px-5 py-4 ${
-            i > 0 ? "border-t border-[#DCE1DF]" : ""
+            i > 0 ? "border-t border-line" : ""
           } ${flag.reviewed ? "opacity-50" : ""}`}
         >
           <span
             className={`mt-1 h-2 w-2 shrink-0 rounded-full ${
-              flag.reviewed ? "bg-[#DCE1DF]" : "bg-[#A6672A]"
+              flag.reviewed ? "bg-line" : "bg-amber"
             }`}
             aria-hidden
           />
           <div className="flex-1">
-            <p className="text-sm">{flag.reason}</p>
+            <p className="text-sm text-ink">{flag.reason}</p>
             <p
-              className="mt-1 text-xs text-[#5C6B70]"
-              style={{ fontFamily: "var(--font-plex-mono)" }}
+              className="mt-1 text-xs text-ink-muted"
+              style={{ fontFamily: "var(--font-mono)" }}
             >
               {flag.bracelet_id.slice(0, 8)}… ·{" "}
               {new Date(flag.created_at).toLocaleString()}
@@ -57,9 +57,9 @@ export default function FlaggedScansList({ flags }: { flags: Flag[] }) {
           {!flag.reviewed && (
             <button
               onClick={() => handleReview(flag.id)}
-              className="shrink-0 whitespace-nowrap border border-[#DCE1DF] px-3 py-1.5 text-xs font-medium hover:border-[#13232D]"
+              className="shrink-0 whitespace-nowrap border border-line px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-brand-green-dark"
             >
-              Mark reviewed
+              تمّت المراجعة
             </button>
           )}
         </li>

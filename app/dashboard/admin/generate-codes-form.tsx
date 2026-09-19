@@ -20,7 +20,7 @@ export default function GenerateCodesForm() {
     if (result.success && result.ids) {
       setIds(result.ids);
     } else {
-      setError(result.message ?? "Something went wrong.");
+      setError(result.message ?? "حدث خطأ ما.");
     }
   }
 
@@ -28,43 +28,44 @@ export default function GenerateCodesForm() {
     <div className="flex flex-col gap-4">
       <div className="flex items-end gap-3">
         <label className="flex flex-col gap-1.5">
-          <span className="text-sm text-[#5C6B70]">Count</span>
+          <span className="text-sm text-ink-muted">العدد</span>
           <input
             type="number"
             min={1}
             max={1000}
             value={count}
             onChange={(e) => setCount(Number(e.target.value))}
-            className="w-24 border border-[#DCE1DF] bg-white px-3 py-2 text-sm focus:border-[#13232D] focus:outline-none"
-            style={{ fontFamily: "var(--font-plex-mono)" }}
+            className="w-24 border border-line bg-white px-3 py-2 text-sm text-ink outline-none focus:border-brand-green-dark"
+            style={{ fontFamily: "var(--font-mono)" }}
           />
         </label>
         <button
           onClick={handleGenerate}
           disabled={loading}
-          className="border border-[#13232D] bg-[#13232D] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0B171F] disabled:cursor-not-allowed disabled:opacity-50"
+          className="border border-brand-green-dark bg-brand-green-dark px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-green disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {loading ? "Generating…" : "Generate"}
+          {loading ? "جارِ التوليد…" : "توليد"}
         </button>
       </div>
 
       {error && (
-        <p className="border-l-2 border-[#8C3B33] pl-3 text-sm text-[#8C3B33]">
+        <p className="border-r-2 border-danger pr-3 text-sm text-danger">
           {error}
         </p>
       )}
 
       {ids && (
-        <div className="border-l-2 border-[#2C6E5C] pl-3">
-          <p className="mb-2 text-sm text-[#2C6E5C]">
-            {ids.length} code{ids.length === 1 ? "" : "s"} generated
+        <div className="border-r-2 border-brand-green-dark pr-3">
+          <p className="mb-2 text-sm text-brand-green-dark">
+            تم توليد {ids.length} كود{ids.length === 1 ? "" : "اً"}
           </p>
           <textarea
             readOnly
             value={ids.join("\n")}
             rows={6}
-            className="w-full border border-[#DCE1DF] bg-[#F6F7F6] p-3 text-xs focus:outline-none"
-            style={{ fontFamily: "var(--font-plex-mono)" }}
+            dir="ltr"
+            className="w-full border border-line bg-bg p-3 text-xs text-ink outline-none"
+            style={{ fontFamily: "var(--font-mono)" }}
           />
         </div>
       )}

@@ -10,45 +10,45 @@ export default async function AdminPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
-      <header className="mb-8 flex items-end justify-between border-b border-[#DCE1DF] pb-6">
+      <header className="mb-8 flex items-end justify-between border-b border-line pb-6">
         <div>
-          <p className="text-sm text-[#5C6B70]">SafeTag</p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-            Operations
+          <p className="text-sm text-ink-muted">SafeTag</p>
+          <h1 className="mt-1 font-display text-2xl font-semibold tracking-tight text-ink">
+            العمليات
           </h1>
         </div>
-        <div className="flex items-center gap-2 text-sm text-[#5C6B70]">
+        <div className="flex items-center gap-2 text-sm text-ink-muted">
           <span
             className={`h-2 w-2 rounded-full ${
-              unreviewedCount > 0 ? "bg-[#A6672A]" : "bg-[#2C6E5C]"
+              unreviewedCount > 0 ? "bg-amber" : "bg-brand-green-dark"
             }`}
             aria-hidden
           />
           {unreviewedCount > 0
-            ? `${unreviewedCount} scan${unreviewedCount === 1 ? "" : "s"} need review`
-            : "All clear"}
+            ? `${unreviewedCount} سكان${unreviewedCount === 1 ? "" : "ات"} بحاجة لمراجعة`
+            : "كل شيء تمام"}
         </div>
       </header>
 
-      <section className="mb-10 grid grid-cols-3 divide-x divide-[#DCE1DF] border border-[#DCE1DF] bg-white">
-        <StatCell label="Bracelets" value={stats.total} href="/dashboard/admin/bracelets" />
-        <StatCell label="Activated" value={stats.activated} href="/dashboard/admin/bracelets" />
-        <StatCell label="Scans logged" value={stats.scanned} href="/dashboard/admin/scans" />
+      <section className="mb-10 grid grid-cols-3 divide-x divide-line border border-line bg-surface">
+        <StatCell label="الأساور" value={stats.total} href="/dashboard/admin/bracelets" />
+        <StatCell label="مفعّلة" value={stats.activated} href="/dashboard/admin/bracelets" />
+        <StatCell label="سكانات مسجلة" value={stats.scanned} href="/dashboard/admin/scans" />
       </section>
 
       <section className="mb-10">
-        <h2 className="mb-1 text-base font-semibold">Bracelet codes</h2>
-        <p className="mb-4 text-sm text-[#5C6B70]">
-          Generate new codes, then print them for the next production batch.
+        <h2 className="mb-1 text-base font-semibold text-ink">أكواد الأساور</h2>
+        <p className="mb-4 text-sm text-ink-muted">
+          ولّد أكواد جديدة، وبعدها اطبعها للدفعة الإنتاجية الجاية.
         </p>
-        <div className="border border-[#DCE1DF] bg-white p-5">
+        <div className="border border-line bg-surface p-5">
           <GenerateCodesForm />
-          <div className="mt-4 border-t border-[#DCE1DF] pt-4">
+          <div className="mt-4 border-t border-line pt-4">
             <Link
               href="/dashboard/admin/print-codes"
-              className="text-sm font-medium underline decoration-[#DCE1DF] decoration-2 underline-offset-4 hover:decoration-[#13232D]"
+              className="text-sm font-medium text-brand-green-dark underline decoration-line decoration-2 underline-offset-4 hover:decoration-brand-green"
             >
-              Print unactivated codes
+              طباعة الأكواد الغير مفعّلة
             </Link>
           </div>
         </div>
@@ -56,17 +56,16 @@ export default async function AdminPage() {
 
       <section>
         <div className="mb-1 flex items-baseline justify-between">
-          <h2 className="text-base font-semibold">Safety review</h2>
+          <h2 className="text-base font-semibold text-ink">مراجعة السلامة</h2>
           <span
-            className="text-xs text-[#5C6B70]"
-            style={{ fontFamily: "var(--font-plex-mono)" }}
+            className="text-xs text-ink-muted"
+            style={{ fontFamily: "var(--font-mono)" }}
           >
-            {unreviewedCount} unreviewed
+            {unreviewedCount} غير مراجعة
           </span>
         </div>
-        <p className="mb-4 text-sm text-[#5C6B70]">
-          Scans flagged for unusual patterns — repeated attempts or scans
-          from several locations in a short window.
+        <p className="mb-4 text-sm text-ink-muted">
+          سكانات مُعلّمة بأنماط غير اعتيادية — محاولات متكررة أو سكانات من عدة مواقع فوقت قصير.
         </p>
         <FlaggedScansList flags={flags} />
       </section>
@@ -84,14 +83,14 @@ function StatCell({
   href: string;
 }) {
   return (
-    <Link href={href} className="block px-5 py-5 transition-colors hover:bg-[#F6F7F6]">
+    <Link href={href} className="block px-5 py-5 transition-colors hover:bg-bg">
       <p
-        className="text-3xl font-medium"
-        style={{ fontFamily: "var(--font-plex-mono)" }}
+        className="text-3xl font-medium text-ink"
+        style={{ fontFamily: "var(--font-mono)" }}
       >
         {value}
       </p>
-      <p className="mt-1 text-sm text-[#5C6B70]">{label}</p>
+      <p className="mt-1 text-sm text-ink-muted">{label}</p>
     </Link>
   );
 }

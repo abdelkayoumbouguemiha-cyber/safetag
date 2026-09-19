@@ -8,19 +8,19 @@ export default async function ScansDetailPage() {
     <main className="mx-auto max-w-3xl px-6 py-10">
       <Link
         href="/dashboard/admin"
-        className="text-sm text-[#5C6B70] hover:text-[#13232D]"
+        className="text-sm text-ink-muted hover:text-ink"
       >
-        ← Back to Operations
+        → رجوع للعمليات
       </Link>
 
-      <h1 className="mt-4 mb-1 text-2xl font-semibold tracking-tight">
-        Scans
+      <h1 className="mt-4 mb-1 font-display text-2xl font-semibold tracking-tight text-ink">
+        السكانات
       </h1>
-      <p className="mb-8 text-sm text-[#5C6B70]">
-        Most recent {scans.length} scans logged
+      <p className="mb-8 text-sm text-ink-muted">
+        آخر {scans.length} سكان مسجل
       </p>
 
-      <ul className="border border-[#DCE1DF] bg-white">
+      <ul className="border border-line bg-surface">
         {scans.map((s, i) => {
           const bracelet = s.children_bracelets as unknown as {
             child_first_name: string | null;
@@ -28,19 +28,19 @@ export default async function ScansDetailPage() {
           return (
             <li
               key={s.id}
-              className={`px-5 py-4 ${i > 0 ? "border-t border-[#DCE1DF]" : ""}`}
+              className={`px-5 py-4 ${i > 0 ? "border-t border-line" : ""}`}
             >
-              <p className="text-sm">
+              <p className="text-sm text-ink">
                 {bracelet?.child_first_name ?? (
-                  <span className="text-[#5C6B70]">Unknown bracelet</span>
+                  <span className="text-ink-muted">سوار غير معروف</span>
                 )}
               </p>
               <p
-                className="mt-1 text-xs text-[#5C6B70]"
-                style={{ fontFamily: "var(--font-plex-mono)" }}
+                className="mt-1 text-xs text-ink-muted"
+                style={{ fontFamily: "var(--font-mono)" }}
               >
                 {new Date(s.created_at).toLocaleString()} · IP: {s.ip_address}{" "}
-                · {s.consent_given ? "location shared" : "no location"}
+                · {s.consent_given ? "الموقع مُشارك" : "بلا موقع"}
               </p>
             </li>
           );
