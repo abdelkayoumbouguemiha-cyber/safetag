@@ -133,3 +133,67 @@ export async function getAllScansDetailed() {
   if (error) return { scans: [] };
   return { scans: data };
 }
+
+// ---- Orders management (cash-on-delivery) ----
+
+const ORDER_STATUSES = [
+  "new",
+  "confirmed",
+  "shipped",
+  "delivered",
+  "cancelled",
+  "returned",
+] as const;
+
+type OrderStatus = (typeof ORDER_STATUSES)[number];
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export async function getOrders() {
+  await requireAdmin();
+
+  const admin = createAdminClient();
+
+  const { data, error } = await admin
+    .from("orders")
+    .select(
+      "id, created_at, full_name, phone, wilaya_name, commune, delivery_type, address, quantity, unit_price, delivery_fee, status, customer_note, admin_note"
+    )
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  if (error) return { orders: [] };
+  return { orders: data };
+}
+
+export async function updateOrderStatus(orderId: string, status: string) {
+  await requireAdmin();
+
+  if (!UUID_RE.test(orderId)) return { success: false };
+  if (!ORDER_STATUSES.includes(status as OrderStatus)) return { success: false };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("orders")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", orderId);
+
+  return { success: !error };
+}
+
+export async function saveOrderAdminNote(orderId: string, note: string) {
+  await requireAdmin();
+
+  if (!UUID_RE.test(orderId)) return { success: false };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("orders")
+    .update({
+      admin_note: note.trim().slice(0, 1000) || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", orderId);
+
+  return { success: !error };
+}
