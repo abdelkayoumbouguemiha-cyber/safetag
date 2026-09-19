@@ -7,7 +7,7 @@ export const homeTranslations: Record<Locale, {
   heroTitle: string;
   heroText: string;
   ctaLogin: string;
-  ctaContact: string;
+  ctaBuy: string;
   howItWorks: string;
   step1Title: string;
   step1Text: string;
@@ -26,7 +26,7 @@ export const homeTranslations: Record<Locale, {
     heroText:
       "كود QR بسيط على سوار طفلك — إذا ضاع، أي شخص يجده يقدر يبلغكم فورًا، بلا ما تظهر معلوماتكم الشخصية لأحد.",
     ctaLogin: "عندي سوار — سجّل دخول",
-    ctaContact: "تواصلوا معنا لشراء سوار",
+    ctaBuy: "اشترِ السوار",
     howItWorks: "كيف يعمل؟",
     step1Title: "يمسح الكود",
     step1Text: "أي شخص يجد طفلكم يمسح كود QR على السوار — بلا تحميل تطبيق",
@@ -46,7 +46,7 @@ export const homeTranslations: Record<Locale, {
     heroText:
       "Un simple code QR sur le bracelet de votre enfant — s'il est perdu, quiconque le trouve peut vous alerter immédiatement, sans jamais voir vos informations personnelles.",
     ctaLogin: "J'ai un bracelet — Se connecter",
-    ctaContact: "Contactez-nous pour acheter un bracelet",
+    ctaBuy: "Acheter le bracelet",
     howItWorks: "Comment ça marche ?",
     step1Title: "Scan du code",
     step1Text: "Toute personne qui trouve votre enfant scanne le code QR — sans télécharger d'application",
@@ -66,7 +66,7 @@ export const homeTranslations: Record<Locale, {
     heroText:
       "A simple QR code on your child's bracelet — if they get lost, whoever finds them can alert you instantly, without ever seeing your personal information.",
     ctaLogin: "I have a bracelet — Log in",
-    ctaContact: "Contact us to get a bracelet",
+    ctaBuy: "Buy bracelet",
     howItWorks: "How it works",
     step1Title: "Scan the code",
     step1Text: "Anyone who finds your child scans the QR code on the bracelet — no app to download",

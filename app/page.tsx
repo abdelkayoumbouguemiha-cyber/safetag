@@ -41,12 +41,11 @@ export default async function HomePage() {
             {t.ctaLogin}
           </Link>
           
-          <a
-            href="mailto:contact@safetag.dz"
+          <Link href="/buy"
             className="rounded-lg border border-line px-7 py-3 text-sm font-medium text-ink transition-colors hover:border-brand-green"
           >
-            {t.ctaContact}
-          </a>
+            {t.ctaBuy}
+          </Link>
         </div>
       </section>
 
