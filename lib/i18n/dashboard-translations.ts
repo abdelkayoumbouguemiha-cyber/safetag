@@ -15,6 +15,27 @@ export const dashboardTranslations: Record<Locale, {
   enterConfirmCode: string;
   invalidCode: string;
   genericError: string;
+  notFoundBracelet: string;
+  status: string;
+  recentScans: string;
+  noScansYet: string;
+  location: string;
+  onMyWay: string;
+  resolved: string;
+  activateTitle: string;
+  cameraError: string;
+  cancelScan: string;
+  scanQr: string;
+  orManualEntry: string;
+  activationCodePlaceholder: string;
+  childNamePlaceholder: string;
+  activating: string;
+  activate: string;
+  settingsTitle: string;
+  settingsDescription: string;
+  savePhone: string;
+  saving: string;
+  saved: string;
 }> = {
   ar: {
     title: "أساوركم",
@@ -31,6 +52,27 @@ export const dashboardTranslations: Record<Locale, {
     enterConfirmCode: "أدخل الكود المرسل للتأكيد",
     invalidCode: "الكود غير صحيح.",
     genericError: "حدث خطأ ما.",
+    notFoundBracelet: "السوار غير موجود.",
+    status: "الحالة",
+    recentScans: "آخر السكانات",
+    noScansYet: "لا توجد سكانات بعد.",
+    location: "الموقع",
+    onMyWay: "فالطريق",
+    resolved: "تم الحل",
+    activateTitle: "تفعيل سوار",
+    cameraError: "تعذّر الوصول للكاميرا. يمكنكم إدخال الكود يدوياً بالأسفل.",
+    cancelScan: "إلغاء المسح",
+    scanQr: "📷 مسح رمز QR",
+    orManualEntry: "— أو أدخل يدوياً —",
+    activationCodePlaceholder: "كود التفعيل",
+    childNamePlaceholder: "الاسم الأول للطفل",
+    activating: "جارِ التفعيل...",
+    activate: "تفعيل",
+    settingsTitle: "إعدادات الحساب",
+    settingsDescription: "أضيفوا رقم هاتف (اختياري) ليتمكن الشخص الذي يجد طفلكم من التواصل معكم مباشرة.",
+    savePhone: "حفظ رقم الهاتف",
+    saving: "جارِ الحفظ...",
+    saved: "تم الحفظ!",
   },
   fr: {
     title: "Vos bracelets",
@@ -47,6 +89,27 @@ export const dashboardTranslations: Record<Locale, {
     enterConfirmCode: "Entrez le code envoyé pour confirmer",
     invalidCode: "Code invalide.",
     genericError: "Une erreur s'est produite.",
+    notFoundBracelet: "Bracelet introuvable.",
+    status: "Statut",
+    recentScans: "Scans récents",
+    noScansYet: "Aucun scan pour le moment.",
+    location: "Position",
+    onMyWay: "J'arrive",
+    resolved: "Résolu",
+    activateTitle: "Activer un bracelet",
+    cameraError: "Impossible d'accéder à la caméra. Vous pouvez saisir le code manuellement ci-dessous.",
+    cancelScan: "Annuler le scan",
+    scanQr: "📷 Scanner le code QR",
+    orManualEntry: "— ou saisissez manuellement —",
+    activationCodePlaceholder: "Code d'activation",
+    childNamePlaceholder: "Prénom de l'enfant",
+    activating: "Activation...",
+    activate: "Activer",
+    settingsTitle: "Paramètres du compte",
+    settingsDescription: "Ajoutez un numéro de téléphone (facultatif) pour que la personne qui trouve votre enfant puisse vous contacter directement.",
+    savePhone: "Enregistrer le numéro",
+    saving: "Enregistrement...",
+    saved: "Enregistré !",
   },
   en: {
     title: "Your Bracelets",
@@ -63,5 +126,26 @@ export const dashboardTranslations: Record<Locale, {
     enterConfirmCode: "Enter the code sent to confirm",
     invalidCode: "Invalid code.",
     genericError: "Something went wrong.",
+    notFoundBracelet: "Bracelet not found.",
+    status: "Status",
+    recentScans: "Recent Scans",
+    noScansYet: "No scans yet.",
+    location: "Location",
+    onMyWay: "On my way",
+    resolved: "Resolved",
+    activateTitle: "Activate a Bracelet",
+    cameraError: "Could not access camera. You can still enter the code manually below.",
+    cancelScan: "Cancel scanning",
+    scanQr: "📷 Scan QR Code",
+    orManualEntry: "— or enter manually —",
+    activationCodePlaceholder: "Activation code",
+    childNamePlaceholder: "Child's first name",
+    activating: "Activating...",
+    activate: "Activate",
+    settingsTitle: "Account Settings",
+    settingsDescription: "Optionally add a phone number so a finder can contact you directly.",
+    savePhone: "Save Phone Number",
+    saving: "Saving...",
+    saved: "Saved!",
   },
 };

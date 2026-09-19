@@ -1,9 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { updatePhone } from "@/actions/auth";
+import type { Locale } from "@/lib/i18n/locale";
+import { dashboardTranslations } from "@/lib/i18n/dashboard-translations";
 
 export default function SettingsPage() {
+  const [locale, setLocaleState] = useState<Locale>("ar");
+
+  useEffect(() => {
+    const match = document.cookie.match(/safetag_lang=(ar|fr|en)/);
+    if (match) setLocaleState(match[1] as Locale);
+  }, []);
+
+  const t = dashboardTranslations[locale] ?? dashboardTranslations.ar;
+  const dir = locale === "ar" ? "rtl" : "ltr";
+
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
@@ -18,15 +30,15 @@ export default function SettingsPage() {
       setStatus("saved");
     } else {
       setStatus("error");
-      setError(result.message ?? "حدث خطأ ما.");
+      setError(result.message ?? t.genericError);
     }
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-bg p-6">
-      <h1 className="font-display text-2xl font-semibold text-brand-green-dark">إعدادات الحساب</h1>
+    <main dir={dir} className="flex min-h-screen flex-col items-center justify-center gap-4 bg-bg p-6">
+      <h1 className="font-display text-2xl font-semibold text-brand-green-dark">{t.settingsTitle}</h1>
       <p className="max-w-sm text-center text-ink-muted">
-        أضيفوا رقم هاتف (اختياري) ليتمكن الشخص الذي يجد طفلكم من التواصل معكم مباشرة.
+        {t.settingsDescription}
       </p>
 
       <input
@@ -43,10 +55,10 @@ export default function SettingsPage() {
         disabled={status === "saving" || !phone}
         className="w-72 rounded-xl bg-brand-green px-6 py-3 font-medium text-white shadow-sm transition-colors hover:bg-brand-green-dark disabled:opacity-50"
       >
-        {status === "saving" ? "جارِ الحفظ..." : "حفظ رقم الهاتف"}
+        {status === "saving" ? t.saving : t.savePhone}
       </button>
 
-      {status === "saved" && <p className="text-sm text-brand-green-dark">تم الحفظ!</p>}
+      {status === "saved" && <p className="text-sm text-brand-green-dark">{t.saved}</p>}
       {error && <p className="text-sm text-danger">{error}</p>}
     </main>
   );
