@@ -30,10 +30,41 @@ export default async function AdminPage() {
         </div>
       </header>
 
-      <section className="mb-10 grid grid-cols-3 divide-x divide-line border border-line bg-surface">
+      <section className="mb-10 grid grid-cols-4 divide-x divide-line border border-line bg-surface">
         <StatCell label="الأساور" value={stats.total} href="/dashboard/admin/bracelets" />
         <StatCell label="مفعّلة" value={stats.activated} href="/dashboard/admin/bracelets" />
         <StatCell label="سكانات مسجلة" value={stats.scanned} href="/dashboard/admin/scans" />
+        <StatCell
+          label="طلبات جديدة"
+          value={stats.newOrders}
+          href="/dashboard/admin/orders"
+          highlight={stats.newOrders > 0}
+        />
+      </section>
+
+      <section className="mb-10">
+        <div className="mb-1 flex items-baseline justify-between">
+          <h2 className="text-base font-semibold text-ink">الطلبات</h2>
+          {stats.newOrders > 0 && (
+            <span
+              className="text-xs text-amber"
+              style={{ fontFamily: "var(--font-mono)" }}
+            >
+              {stats.newOrders} طلب جديد بحاجة للمعالجة
+            </span>
+          )}
+        </div>
+        <p className="mb-4 text-sm text-ink-muted">
+          طلبات الشراء بالدفع عند الاستلام — تأكيد، تغيير الحالة، وتتبع التوصيل.
+        </p>
+        <div className="border border-line bg-surface p-5">
+          <Link
+            href="/dashboard/admin/orders"
+            className="inline-block rounded-lg bg-brand-green-dark px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-green"
+          >
+            عرض جميع الطلبات
+          </Link>
+        </div>
       </section>
 
       <section className="mb-10">
@@ -77,15 +108,17 @@ function StatCell({
   label,
   value,
   href,
+  highlight,
 }: {
   label: string;
   value: number;
   href: string;
+  highlight?: boolean;
 }) {
   return (
     <Link href={href} className="block px-5 py-5 transition-colors hover:bg-bg">
       <p
-        className="text-3xl font-medium text-ink"
+        className={`text-3xl font-medium ${highlight ? "text-amber" : "text-ink"}`}
         style={{ fontFamily: "var(--font-mono)" }}
       >
         {value}

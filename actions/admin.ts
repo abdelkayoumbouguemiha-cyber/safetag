@@ -59,10 +59,16 @@ export async function getAdminStats() {
     .from("scan_logs")
     .select("*", { count: "exact", head: true });
 
+  const { count: newOrders } = await admin
+    .from("orders")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "new");
+
   return {
     total: total ?? 0,
     activated: activated ?? 0,
     scanned: scanned ?? 0,
+    newOrders: newOrders ?? 0,
   };
 }
 export async function getFlaggedScans() {
