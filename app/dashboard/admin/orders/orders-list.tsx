@@ -1,0 +1,188 @@
+"use client";
+
+import { useState } from "react";
+import { updateOrderStatus, saveOrderAdminNote } from "@/actions/admin";
+
+type Order = {
+  id: string;
+  created_at: string;
+  full_name: string;
+  phone: string;
+  wilaya_name: string;
+  commune: string;
+  delivery_type: string;
+  address: string | null;
+  quantity: number;
+  unit_price: number;
+  delivery_fee: number;
+  status: string;
+  customer_note: string | null;
+  admin_note: string | null;
+};
+
+const STATUS_OPTIONS = [
+  { value: "new", label: "جديد" },
+  { value: "confirmed", label: "مؤكد" },
+  { value: "shipped", label: "تم الشحن" },
+  { value: "delivered", label: "تم التسليم" },
+  { value: "cancelled", label: "ملغى" },
+  { value: "returned", label: "مرتجع" },
+] as const;
+
+const STATUS_DOT: Record<string, string> = {
+  new: "bg-amber",
+  confirmed: "bg-brand-green-light",
+  shipped: "bg-brand-green",
+  delivered: "bg-brand-green-dark",
+  cancelled: "bg-danger",
+  returned: "bg-ink-muted",
+};
+
+const DELIVERY_LABEL: Record<string, string> = {
+  home: "إلى المنزل",
+  desk: "إلى مكتب التوصيل",
+};
+
+function formatNumber(n: number): string {
+  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
+
+export default function OrdersList({ orders: initialOrders }: { orders: Order[] }) {
+  const [orders, setOrders] = useState(initialOrders);
+  const [savingStatusId, setSavingStatusId] = useState<string | null>(null);
+  const [savingNoteId, setSavingNoteId] = useState<string | null>(null);
+  const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  async function handleStatusChange(orderId: string, status: string) {
+    setSavingStatusId(orderId);
+    const result = await updateOrderStatus(orderId, status);
+    if (result.success) {
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)));
+    }
+    setSavingStatusId(null);
+  }
+
+  async function handleSaveNote(orderId: string) {
+    const note = noteDrafts[orderId] ?? "";
+    setSavingNoteId(orderId);
+    const result = await saveOrderAdminNote(orderId, note);
+    if (result.success) {
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, admin_note: note.trim() || null } : o))
+      );
+    }
+    setSavingNoteId(null);
+  }
+
+  if (orders.length === 0) {
+    return (
+      <div className="border border-line bg-surface px-5 py-8 text-center text-sm text-ink-muted">
+        لا توجد طلبات حالياً.
+      </div>
+    );
+  }
+
+  return (
+    <ul className="border border-line bg-surface">
+      {orders.map((order, i) => {
+        const total = order.unit_price * order.quantity + order.delivery_fee;
+        const isExpanded = expandedId === order.id;
+
+        return (
+          <li key={order.id} className={i > 0 ? "border-t border-line" : ""}>
+            <button
+              onClick={() => setExpandedId(isExpanded ? null : order.id)}
+              className="flex w-full items-start gap-4 px-5 py-4 text-right transition-colors hover:bg-bg"
+            >
+              <span
+                className={`mt-1 h-2 w-2 shrink-0 rounded-full ${STATUS_DOT[order.status] ?? "bg-line"}`}
+                aria-hidden
+              />
+              <div className="flex-1">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-medium text-ink">{order.full_name}</p>
+                  <p
+                    className="text-sm text-brand-green-dark"
+                    style={{ fontFamily: "var(--font-mono)" }}
+                  >
+                    {formatNumber(total)} دج
+                  </p>
+                </div>
+                <p
+                  className="mt-1 text-xs text-ink-muted"
+                  style={{ fontFamily: "var(--font-mono)" }}
+                  dir="ltr"
+                >
+                  {order.phone}
+                </p>
+                <p className="mt-1 text-xs text-ink-muted">
+                  {order.wilaya_name} · {order.commune} · {DELIVERY_LABEL[order.delivery_type] ?? order.delivery_type} · الكمية: {order.quantity}
+                </p>
+                <p
+                  className="mt-1 text-xs text-ink-muted"
+                  style={{ fontFamily: "var(--font-mono)" }}
+                >
+                  {order.id.slice(0, 8)}… · {new Date(order.created_at).toLocaleString()}
+                </p>
+              </div>
+            </button>
+
+            {isExpanded && (
+              <div className="border-t border-line bg-bg px-5 py-4">
+                <div className="mb-4">
+                  <p className="mb-1.5 text-xs font-medium text-ink-muted">الحالة</p>
+                  <select
+                    value={order.status}
+                    disabled={savingStatusId === order.id}
+                    onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                    className="w-full max-w-xs rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink outline-none focus:border-brand-green disabled:opacity-50"
+                  >
+                    {STATUS_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {order.address && (
+                  <div className="mb-4">
+                    <p className="mb-1 text-xs font-medium text-ink-muted">العنوان</p>
+                    <p className="text-sm text-ink">{order.address}</p>
+                  </div>
+                )}
+
+                {order.customer_note && (
+                  <div className="mb-4">
+                    <p className="mb-1 text-xs font-medium text-ink-muted">ملاحظة الزبون</p>
+                    <p className="text-sm text-ink">{order.customer_note}</p>
+                  </div>
+                )}
+
+                <div>
+                  <p className="mb-1.5 text-xs font-medium text-ink-muted">ملاحظة الأدمن</p>
+                  <textarea
+                    rows={2}
+                    value={noteDrafts[order.id] ?? order.admin_note ?? ""}
+                    onChange={(e) =>
+                      setNoteDrafts((prev) => ({ ...prev, [order.id]: e.target.value }))
+                    }
+                    className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink outline-none focus:border-brand-green"
+                  />
+                  <button
+                    onClick={() => handleSaveNote(order.id)}
+                    disabled={savingNoteId === order.id}
+                    className="mt-2 rounded-lg border border-line px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-brand-green-dark disabled:opacity-50"
+                  >
+                    {savingNoteId === order.id ? "جارِ الحفظ…" : "حفظ الملاحظة"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
