@@ -9,6 +9,11 @@ export function normalizePhone(raw: string): string {
   return p;
 }
 
+const colorBreakdownItemSchema = z.object({
+  code: z.string().min(1).max(20),
+  quantity: z.number().int().min(1),
+});
+
 export const orderSchema = z
   .object({
     full_name: z.string().trim().min(3).max(100),
@@ -24,6 +29,7 @@ export const orderSchema = z
     delivery_type: z.enum(["home", "desk"]),
     address: z.string().trim().max(250).optional(),
     quantity: z.number().int().min(1).max(20),
+    color_breakdown: z.array(colorBreakdownItemSchema).min(1).max(6),
     customer_note: z.string().trim().max(500).optional(),
     // Honeypot: real users never see this field, bots fill it in.
     website: z.string().optional(),
@@ -32,6 +38,10 @@ export const orderSchema = z
     (d) =>
       d.delivery_type !== "home" || (d.address !== undefined && d.address.length >= 5),
     { path: ["address"], message: "address_required" }
+  )
+  .refine(
+    (d) => d.color_breakdown.reduce((sum, c) => sum + c.quantity, 0) === d.quantity,
+    { path: ["color_breakdown"], message: "color_breakdown_mismatch" }
   );
 
 export type OrderInput = z.infer<typeof orderSchema>;
