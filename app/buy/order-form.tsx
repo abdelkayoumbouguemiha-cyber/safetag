@@ -243,7 +243,7 @@ export default function OrderForm({
 
         <div className="rounded-xl border border-line bg-surface px-4 py-3">
           <p className="text-sm text-ink-muted">{t.unitPrice}</p>
-          <p className="mt-1 text-xl font-semibold text-brand-green-dark">
+          <p dir="ltr" className="mt-1 text-xl font-semibold text-brand-green-dark">
             {priceKnown
               ? `${formatNumber(PRICING.unitPrice)} ${t.currency}`
               : t.toBeConfirmed}
@@ -448,7 +448,7 @@ export default function OrderForm({
           <dl className="mt-3 flex flex-col gap-1.5 text-sm">
             <div className="flex justify-between">
               <dt className="text-ink-muted">{t.unitPrice} × {quantity}</dt>
-              <dd className="text-ink">
+              <dd dir="ltr" className="text-ink">
                 {priceKnown
                   ? `${formatNumber(totals.unitPrice * quantity)} ${t.currency}`
                   : t.toBeConfirmed}
@@ -456,7 +456,7 @@ export default function OrderForm({
             </div>
             <div className="flex justify-between">
               <dt className="text-ink-muted">{t.deliveryFee}</dt>
-              <dd className="text-ink">
+              <dd dir="ltr" className="text-ink">
                 {priceKnown
                   ? `${formatNumber(totals.deliveryFee)} ${t.currency}`
                   : t.toBeConfirmed}
@@ -464,7 +464,7 @@ export default function OrderForm({
             </div>
             <div className="mt-1 flex justify-between border-t border-line pt-2 font-semibold">
               <dt className="text-ink">{t.total}</dt>
-              <dd className="text-brand-green-dark">
+              <dd dir="ltr" className="text-brand-green-dark">
                 {priceKnown
                   ? `${formatNumber(totals.total)} ${t.currency}`
                   : t.toBeConfirmed}
