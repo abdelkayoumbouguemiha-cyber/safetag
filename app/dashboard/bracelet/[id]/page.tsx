@@ -1,6 +1,7 @@
 import { getScanHistory } from "@/actions/scans";
 import { createClient } from "@/lib/supabase/server";
 import AcknowledgeButtons from "./acknowledge-buttons";
+import ShareContactButton from "./share-contact-button";
 import { getLocale } from "@/lib/i18n/locale";
 import { dashboardTranslations } from "@/lib/i18n/dashboard-translations";
 
@@ -31,6 +32,14 @@ export default async function BraceletDetailPage({
     );
   }
 
+  const { data: guardian } = await supabase
+    .from("guardians")
+    .select("phone")
+    .eq("id", user!.id)
+    .single();
+
+  const hasPhone = !!guardian?.phone;
+
   const { scans } = await getScanHistory(id);
 
   const statusLabel =
@@ -59,12 +68,28 @@ export default async function BraceletDetailPage({
               <p className="text-sm text-ink-muted">
                 {new Date(scan.created_at).toLocaleString()}
               </p>
+
               {scan.consent_given && scan.approx_lat && scan.approx_lng && (
-                <p className="mt-1 text-xs text-ink-muted">
-                  {t.location}: {scan.approx_lat.toFixed(3)}, {scan.approx_lng.toFixed(3)}
-                </p>
+                <a
+                  href={`https://www.google.com/maps?q=${scan.approx_lat},${scan.approx_lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-brand-green-dark underline underline-offset-4 hover:text-brand-green"
+                >
+                  📍 {t.openInMaps}
+                </a>
               )}
+
               <AcknowledgeButtons scanLogId={scan.id} locale={locale} />
+
+              <div className="mt-2">
+                <ShareContactButton
+                  scanLogId={scan.id}
+                  locale={locale}
+                  initiallyShared={scan.contact_shared}
+                  hasPhone={hasPhone}
+                />
+              </div>
             </li>
           ))}
         </ul>

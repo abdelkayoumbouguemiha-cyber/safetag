@@ -36,13 +36,16 @@ export const dashboardTranslations: Record<Locale, {
   savePhone: string;
   saving: string;
   saved: string;
-  dangerZoneTitle: string;
-  dangerZoneDescription: string;
   deleteAccount: string;
   deleteAccountWarning: string;
   confirmDeleteAccount: string;
-  deletingAccount: string;
   accountDeleted: string;
+  openInMaps: string;
+  sharePhone: string;
+  phoneShared: string;
+  noPhoneOnFile: string;
+  dangerZoneTitle: string;
+  dangerZoneDescription: string;
 }> = {
   ar: {
     title: "أساوركم",
@@ -80,13 +83,16 @@ export const dashboardTranslations: Record<Locale, {
     savePhone: "حفظ رقم الهاتف",
     saving: "جارِ الحفظ...",
     saved: "تم الحفظ!",
+    deleteAccount: "حذف الحساب",
+    deleteAccountWarning: "سيتم حذف حسابكم وكل بياناتكم نهائياً. هذا الإجراء لا يمكن التراجع عنه.",
+    confirmDeleteAccount: "نعم، احذف حسابي",
+    accountDeleted: "تم حذف الحساب.",
+    openInMaps: "افتح الموقع فـ Google Maps",
+    sharePhone: "شارك رقم هاتفك مع هذا الشخص",
+    phoneShared: "تم مشاركة رقم الهاتف ✓",
+    noPhoneOnFile: "لم تضيفوا رقم هاتف بعد — أضيفوه من الإعدادات أولاً",
     dangerZoneTitle: "منطقة الخطر",
-    dangerZoneDescription: "حذف حسابكم نهائي ولا يمكن التراجع عنه. سيتم إلغاء تفعيل جميع أساوركم فورًا.",
-    deleteAccount: "حذف الحساب نهائيًا",
-    deleteAccountWarning: "هل أنتم متأكدون؟ سيتم حذف حسابكم وجميع بياناتكم الشخصية نهائيًا. أساوركم ستُلغى فورًا.",
-    confirmDeleteAccount: "نعم، احذف حسابي نهائيًا",
-    deletingAccount: "جارِ الحذف...",
-    accountDeleted: "تم حذف حسابكم. نتمنى لكم كل الخير.",
+    dangerZoneDescription: "حذف حسابكم إجراء نهائي ولا يمكن التراجع عنه.",
   },
   fr: {
     title: "Vos bracelets",
@@ -124,13 +130,16 @@ export const dashboardTranslations: Record<Locale, {
     savePhone: "Enregistrer le numéro",
     saving: "Enregistrement...",
     saved: "Enregistré !",
+    deleteAccount: "Supprimer le compte",
+    deleteAccountWarning: "Votre compte et toutes vos données seront supprimés définitivement. Cette action est irréversible.",
+    confirmDeleteAccount: "Oui, supprimer mon compte",
+    accountDeleted: "Compte supprimé.",
+    openInMaps: "Ouvrir dans Google Maps",
+    sharePhone: "Partager votre numéro avec cette personne",
+    phoneShared: "Numéro partagé ✓",
+    noPhoneOnFile: "Vous n'avez pas encore ajouté de numéro — ajoutez-le d'abord dans les paramètres",
     dangerZoneTitle: "Zone de danger",
-    dangerZoneDescription: "La suppression de votre compte est définitive et irréversible. Tous vos bracelets seront immédiatement désactivés.",
-    deleteAccount: "Supprimer définitivement le compte",
-    deleteAccountWarning: "Êtes-vous sûr ? Votre compte et toutes vos données personnelles seront définitivement supprimés. Vos bracelets seront désactivés immédiatement.",
-    confirmDeleteAccount: "Oui, supprimer définitivement mon compte",
-    deletingAccount: "Suppression en cours...",
-    accountDeleted: "Votre compte a été supprimé. Nous vous souhaitons tout le meilleur.",
+    dangerZoneDescription: "La suppression de votre compte est définitive et irréversible.",
   },
   en: {
     title: "Your Bracelets",
@@ -168,12 +177,15 @@ export const dashboardTranslations: Record<Locale, {
     savePhone: "Save Phone Number",
     saving: "Saving...",
     saved: "Saved!",
-    dangerZoneTitle: "Danger Zone",
-    dangerZoneDescription: "Deleting your account is permanent and cannot be undone. All your bracelets will be deactivated immediately.",
-    deleteAccount: "Permanently Delete Account",
-    deleteAccountWarning: "Are you sure? Your account and all your personal data will be permanently deleted. Your bracelets will be deactivated immediately.",
-    confirmDeleteAccount: "Yes, permanently delete my account",
-    deletingAccount: "Deleting...",
-    accountDeleted: "Your account has been deleted. We wish you all the best.",
+    deleteAccount: "Delete Account",
+    deleteAccountWarning: "Your account and all your data will be permanently deleted. This cannot be undone.",
+    confirmDeleteAccount: "Yes, delete my account",
+    accountDeleted: "Account deleted.",
+    openInMaps: "Open location in Google Maps",
+    sharePhone: "Share your phone number with this person",
+    phoneShared: "Phone number shared ✓",
+    noPhoneOnFile: "You haven't added a phone number yet — add one in settings first",
+    dangerZoneTitle: "Danger zone",
+    dangerZoneDescription: "Deleting your account is permanent and cannot be undone.",
   },
 };

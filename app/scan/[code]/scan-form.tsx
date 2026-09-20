@@ -1,13 +1,50 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { translations } from "@/lib/i18n/translations";
 import type { Locale } from "@/lib/i18n/locale";
 
 export default function ScanForm({ code, locale }: { code: string; locale: Locale }) {
-  const t = translations[locale];
+  const t = translations[locale] ?? translations.ar;
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [hotline, setHotline] = useState<string | null>(null);
+  const [scanLogId, setScanLogId] = useState<string | null>(null);
+  const [guardianPhone, setGuardianPhone] = useState<string | null>(null);
+
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Poll for up to ~10 minutes after notifying, in case the guardian
+  // shares their phone number a bit later. Stops as soon as it's shared.
+  useEffect(() => {
+    if (!scanLogId || guardianPhone) return;
+
+    let attempts = 0;
+    const maxAttempts = 120; // 120 * 5s = 10 minutes
+
+    pollRef.current = setInterval(async () => {
+      attempts += 1;
+      if (attempts > maxAttempts) {
+        if (pollRef.current) clearInterval(pollRef.current);
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/scan/${scanLogId}/status`, { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.contact_shared && data.phone) {
+          setGuardianPhone(data.phone);
+          if (pollRef.current) clearInterval(pollRef.current);
+        }
+      } catch {
+        // ignore transient network errors, keep polling
+      }
+    }, 5000);
+
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, [scanLogId, guardianPhone]);
 
   async function handleClick() {
     setStatus("sending");
@@ -36,6 +73,7 @@ export default function ScanForm({ code, locale }: { code: string; locale: Local
 
       const data = await res.json();
       setHotline(data.fallback_hotline ?? null);
+      if (data.scan_log_id) setScanLogId(data.scan_log_id);
       setStatus(res.ok ? "sent" : "error");
     } catch {
       setStatus("error");
@@ -44,12 +82,22 @@ export default function ScanForm({ code, locale }: { code: string; locale: Local
 
   if (status === "sent") {
     return (
-      <div className="flex flex-col items-center gap-2">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-green-light/20 text-2xl text-brand-green-dark">
-          ✓
-        </span>
-        <p className="font-medium text-brand-green-dark">{t.notified}</p>
-        {hotline && <p className="text-sm text-ink-muted">{t.hotlineNote(hotline)}</p>}
+      <div className="text-center">
+        <p className="text-green-600 font-medium">{t.notified}</p>
+        {hotline && <p className="text-sm text-gray-500 mt-2">{t.hotlineNote(hotline)}</p>}
+
+        {guardianPhone && (
+          <div className="mt-4 flex flex-col items-center gap-2">
+            <p className="text-sm text-brand-green-dark">{t.guardianSharedPhone}</p>
+            <a
+              href={`tel:${guardianPhone}`}
+              dir="ltr"
+              className="rounded-xl bg-brand-green px-6 py-3 font-medium text-white shadow-sm transition-colors hover:bg-brand-green-dark"
+            >
+              {t.callGuardian}
+            </a>
+          </div>
+        )}
       </div>
     );
   }
@@ -57,8 +105,8 @@ export default function ScanForm({ code, locale }: { code: string; locale: Local
   if (status === "error") {
     return (
       <div className="text-center">
-        <p className="font-medium text-danger">{t.somethingWrong}</p>
-        {hotline && <p className="mt-2 text-sm text-ink-muted">{t.callDirectly(hotline)}</p>}
+        <p className="text-red-600 font-medium">{t.somethingWrong}</p>
+        {hotline && <p className="text-sm text-gray-500 mt-2">{t.callDirectly(hotline)}</p>}
       </div>
     );
   }
@@ -67,7 +115,7 @@ export default function ScanForm({ code, locale }: { code: string; locale: Local
     <button
       onClick={handleClick}
       disabled={status === "sending"}
-      className="w-full rounded-xl bg-brand-green px-6 py-4 text-base font-medium text-white shadow-sm transition-colors hover:bg-brand-green-dark disabled:opacity-50"
+      className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium disabled:opacity-50"
     >
       {status === "sending" ? t.notifying : t.notifyButton}
     </button>

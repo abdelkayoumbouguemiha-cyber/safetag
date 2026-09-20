@@ -10,6 +10,8 @@ export const translations: Record<Locale, {
   somethingWrong: string;
   callDirectly: (n: string) => string;
   inactiveBracelet: string;
+  guardianSharedPhone: string;
+  callGuardian: string;
 }> = {
   ar: {
     lostChild: (name: string) => `قد يكون هذا الطفل ضائعاً — ${name}`,
@@ -21,6 +23,8 @@ export const translations: Record<Locale, {
     somethingWrong: "حدث خطأ ما.",
     callDirectly: (n: string) => `يرجى الاتصال بـ ${n} مباشرة.`,
     inactiveBracelet: "هذا السوار لم يعد نشطاً.",
+    guardianSharedPhone: "وافق الولي على مشاركة رقم هاتفه معكم",
+    callGuardian: "📞 اتصل بالولي",
   },
   fr: {
     lostChild: (name: string) => `Cet enfant est peut-être perdu — ${name}`,
@@ -32,6 +36,8 @@ export const translations: Record<Locale, {
     somethingWrong: "Une erreur s'est produite.",
     callDirectly: (n: string) => `Veuillez appeler le ${n} directement.`,
     inactiveBracelet: "Ce bracelet n'est plus actif.",
+    guardianSharedPhone: "Le tuteur a accepté de partager son numéro avec vous",
+    callGuardian: "📞 Appeler le tuteur",
   },
   en: {
     lostChild: (name: string) => `This child may be lost — ${name}`,
@@ -43,5 +49,7 @@ export const translations: Record<Locale, {
     somethingWrong: "Something went wrong.",
     callDirectly: (n: string) => `Please call ${n} directly.`,
     inactiveBracelet: "This bracelet is no longer active.",
+    guardianSharedPhone: "The guardian agreed to share their phone number with you",
+    callGuardian: "📞 Call Guardian",
   },
 };
