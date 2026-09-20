@@ -3,6 +3,11 @@
 import { useState, useMemo } from "react";
 import { updateOrderStatus, saveOrderAdminNote } from "@/actions/admin";
 
+type ColorBreakdownItem = {
+  code: string;
+  quantity: number;
+};
+
 type Order = {
   id: string;
   created_at: string;
@@ -18,6 +23,7 @@ type Order = {
   status: string;
   customer_note: string | null;
   admin_note: string | null;
+  color_breakdown: ColorBreakdownItem[] | null;
 };
 
 const STATUS_OPTIONS = [
@@ -43,6 +49,19 @@ const DELIVERY_LABEL: Record<string, string> = {
   desk: "إلى مكتب التوصيل",
 };
 
+// Arabic display names for color codes — kept in sync with
+// supabase/migrations/0006_product_colors.sql. Only used as a fallback
+// label; the color dot itself is decorative here since this list doesn't
+// fetch product_colors.hex.
+const COLOR_LABEL: Record<string, string> = {
+  white: "أبيض/كريمي",
+  green: "أخضر فاتح",
+  pink: "وردي",
+  blue: "أزرق فاتح",
+  navy: "كحلي",
+  yellow: "أصفر",
+};
+
 const PAGE_SIZE = 20;
 
 function formatNumber(n: number): string {
@@ -51,6 +70,13 @@ function formatNumber(n: number): string {
 
 function normalizeSearch(text: string): string {
   return text.trim().toLowerCase().replace(/[\s.\-()]/g, "");
+}
+
+function formatColorBreakdown(breakdown: ColorBreakdownItem[] | null): string {
+  if (!breakdown || breakdown.length === 0) return "";
+  return breakdown
+    .map((item) => `${COLOR_LABEL[item.code] ?? item.code} ×${item.quantity}`)
+    .join("، ");
 }
 
 export default function OrdersList({ orders: initialOrders }: { orders: Order[] }) {
@@ -166,6 +192,7 @@ export default function OrdersList({ orders: initialOrders }: { orders: Order[] 
             {visibleOrders.map((order, i) => {
               const total = order.unit_price * order.quantity + order.delivery_fee;
               const isExpanded = expandedId === order.id;
+              const colorsLabel = formatColorBreakdown(order.color_breakdown);
 
               return (
                 <li key={order.id} className={i > 0 ? "border-t border-line" : ""}>
@@ -195,8 +222,13 @@ export default function OrdersList({ orders: initialOrders }: { orders: Order[] 
                         {order.phone}
                       </p>
                       <p className="mt-1 text-xs text-ink-muted">
-                        {order.wilaya_name} · {order.commune} · {DELIVERY_LABEL[order.delivery_type] ?? order.delivery_type} · الكمية: {order.quantity}
+                        {order.wilaya_name} · {order.commune} · {DELIVERY_LABEL[order.delivery_type] ?? order.delivery_type}
                       </p>
+                      {colorsLabel && (
+                        <p className="mt-1 text-xs text-ink">
+                          {colorsLabel}
+                        </p>
+                      )}
                       <p
                         className="mt-1 text-xs text-ink-muted"
                         style={{ fontFamily: "var(--font-mono)" }}
@@ -223,6 +255,13 @@ export default function OrdersList({ orders: initialOrders }: { orders: Order[] 
                           ))}
                         </select>
                       </div>
+
+                      {colorsLabel && (
+                        <div className="mb-4">
+                          <p className="mb-1 text-xs font-medium text-ink-muted">الألوان المطلوبة</p>
+                          <p className="text-sm text-ink">{colorsLabel}</p>
+                        </div>
+                      )}
 
                       {order.address && (
                         <div className="mb-4">

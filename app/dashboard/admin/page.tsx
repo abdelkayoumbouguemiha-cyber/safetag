@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { getAdminStats, getFlaggedScans } from "@/actions/admin";
+import { getAdminStats, getFlaggedScans, getProductColorsAdmin } from "@/actions/admin";
 import GenerateCodesForm from "./generate-codes-form";
 import FlaggedScansList from "./flagged-scans-list";
+import StockManager from "./stock-manager";
 
 export default async function AdminPage() {
   const stats = await getAdminStats();
   const { flags } = await getFlaggedScans();
+  const { colors } = await getProductColorsAdmin();
   const unreviewedCount = flags.filter((f) => !f.reviewed).length;
 
   return (
@@ -65,6 +67,14 @@ export default async function AdminPage() {
             عرض جميع الطلبات
           </Link>
         </div>
+      </section>
+
+      <section className="mb-10">
+        <h2 className="mb-1 text-base font-semibold text-ink">مخزون الألوان</h2>
+        <p className="mb-4 text-sm text-ink-muted">
+          عدّلوا الكمية المتوفرة لكل لون — مثلاً بعد استلام دفعة إنتاج جديدة.
+        </p>
+        <StockManager colors={colors} />
       </section>
 
       <section className="mb-10">

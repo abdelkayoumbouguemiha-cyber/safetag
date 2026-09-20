@@ -163,7 +163,7 @@ export async function getOrders() {
   const { data, error } = await admin
     .from("orders")
     .select(
-      "id, created_at, full_name, phone, wilaya_name, commune, delivery_type, address, quantity, unit_price, delivery_fee, status, customer_note, admin_note"
+      "id, created_at, full_name, phone, wilaya_name, commune, delivery_type, address, quantity, unit_price, delivery_fee, status, customer_note, admin_note, color_breakdown"
     )
     .order("created_at", { ascending: false })
     .limit(200);
@@ -200,6 +200,38 @@ export async function saveOrderAdminNote(orderId: string, note: string) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", orderId);
+
+  return { success: !error };
+}
+
+// ---- Product colors / stock management ----
+
+export async function getProductColorsAdmin() {
+  await requireAdmin();
+
+  const admin = createAdminClient();
+
+  const { data, error } = await admin
+    .from("product_colors")
+    .select("code, name_ar, hex, stock")
+    .order("sort_order", { ascending: true });
+
+  if (error) return { colors: [] };
+  return { colors: data };
+}
+
+export async function updateColorStock(code: string, newStock: number) {
+  await requireAdmin();
+
+  if (!Number.isInteger(newStock) || newStock < 0 || newStock > 100000) {
+    return { success: false };
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("product_colors")
+    .update({ stock: newStock, updated_at: new Date().toISOString() })
+    .eq("code", code);
 
   return { success: !error };
 }
