@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale } from "@/lib/i18n/locale";
 import { orderTranslations } from "@/lib/i18n/order-translations";
+import { getProductColors } from "@/actions/orders";
 import LanguageToggle from "@/components/language-toggle";
 import OrderForm from "./order-form";
 
@@ -14,6 +15,7 @@ export default async function BuyPage() {
   const locale = await getLocale();
   const t = orderTranslations[locale] ?? orderTranslations.ar;
   const dir = locale === "ar" ? "rtl" : "ltr";
+  const { colors } = await getProductColors();
 
   return (
     <div dir={dir} className="min-h-screen bg-bg text-ink">
@@ -32,7 +34,7 @@ export default async function BuyPage() {
         <h1 className="mt-3 mb-8 font-display text-3xl font-semibold text-brand-green-dark">
           {t.pageTitle}
         </h1>
-        <OrderForm locale={locale} />
+        <OrderForm locale={locale} colors={colors} />
       </main>
     </div>
   );

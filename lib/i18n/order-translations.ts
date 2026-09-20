@@ -22,6 +22,10 @@ export type OrderStrings = {
   address: string;
   addressPlaceholder: string;
   quantity: string;
+  chooseColors: string;
+  totalQuantity: string;
+  outOfStock: string;
+  selectColor: string;
   note: string;
   notePlaceholder: string;
   paymentTitle: string;
@@ -75,6 +79,10 @@ export const orderTranslations: Record<Locale, OrderStrings> = {
     address: "العنوان الكامل",
     addressPlaceholder: "الحي، الشارع، رقم المنزل...",
     quantity: "الكمية",
+    chooseColors: "اختاروا الألوان والكمية",
+    totalQuantity: "إجمالي الكمية",
+    outOfStock: "نفد المخزون",
+    selectColor: "اختاروا لونًا واحدًا على الأقل.",
     note: "ملاحظة (اختياري)",
     notePlaceholder: "أي معلومة تساعد على التوصيل",
     paymentTitle: "الدفع عند الاستلام",
@@ -127,6 +135,10 @@ export const orderTranslations: Record<Locale, OrderStrings> = {
     address: "Adresse complète",
     addressPlaceholder: "Quartier, rue, numéro...",
     quantity: "Quantité",
+    chooseColors: "Choisissez les couleurs et la quantité",
+    totalQuantity: "Quantité totale",
+    outOfStock: "Rupture de stock",
+    selectColor: "Choisissez au moins une couleur.",
     note: "Remarque (facultatif)",
     notePlaceholder: "Toute information utile pour la livraison",
     paymentTitle: "Paiement à la livraison",
@@ -179,6 +191,10 @@ export const orderTranslations: Record<Locale, OrderStrings> = {
     address: "Full address",
     addressPlaceholder: "Neighborhood, street, number...",
     quantity: "Quantity",
+    chooseColors: "Choose colors and quantity",
+    totalQuantity: "Total quantity",
+    outOfStock: "Out of stock",
+    selectColor: "Please select at least one color.",
     note: "Note (optional)",
     notePlaceholder: "Anything that helps with delivery",
     paymentTitle: "Cash on delivery",

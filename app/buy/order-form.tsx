@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { FormEvent } from "react";
 import Image from "next/image";
 import { createOrder } from "@/actions/orders";
@@ -10,12 +10,42 @@ import type { DeliveryType } from "@/lib/config/pricing";
 import type { Locale } from "@/lib/i18n/locale";
 import WilayaSelect from "./wilaya-select";
 
+type ProductColor = {
+  code: string;
+  name_ar: string;
+  name_fr: string;
+  name_en: string;
+  hex: string;
+  stock: number;
+};
+
+const PRODUCT_IMAGES = [
+  "/products/1.jpeg",
+  "/products/2.jpeg",
+  "/products/3.jpeg",
+  "/products/4.jpeg",
+];
+
 function formatNumber(n: number): string {
   return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 }
 
-export default function OrderForm({ locale }: { locale: Locale }) {
+function colorName(color: ProductColor, locale: Locale): string {
+  if (locale === "fr") return color.name_fr;
+  if (locale === "en") return color.name_en;
+  return color.name_ar;
+}
+
+export default function OrderForm({
+  locale,
+  colors,
+}: {
+  locale: Locale;
+  colors: ProductColor[];
+}) {
   const t = orderTranslations[locale] ?? orderTranslations.ar;
+
+  const [activeImage, setActiveImage] = useState(0);
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -23,7 +53,7 @@ export default function OrderForm({ locale }: { locale: Locale }) {
   const [commune, setCommune] = useState("");
   const [deliveryType, setDeliveryType] = useState<DeliveryType>("home");
   const [address, setAddress] = useState("");
-  const [quantity, setQuantity] = useState(1);
+  const [colorQuantities, setColorQuantities] = useState<Record<string, number>>({});
   const [note, setNote] = useState("");
   const [website, setWebsite] = useState(""); // honeypot, must stay empty
 
@@ -33,7 +63,21 @@ export default function OrderForm({ locale }: { locale: Locale }) {
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
 
   const priceKnown = PRICING.unitPrice > 0;
+
+  const quantity = useMemo(
+    () => Object.values(colorQuantities).reduce((sum, q) => sum + q, 0),
+    [colorQuantities]
+  );
   const totals = computeTotals(deliveryType, quantity);
+
+  function changeColorQuantity(code: string, next: number, stock: number) {
+    const clamped = Math.max(0, Math.min(stock, next));
+    setColorQuantities((prev) => {
+      const updated = { ...prev, [code]: clamped };
+      if (clamped === 0) delete updated[code];
+      return updated;
+    });
+  }
 
   function validationMessage(field: string): string {
     switch (field) {
@@ -48,6 +92,7 @@ export default function OrderForm({ locale }: { locale: Locale }) {
       case "address":
         return t.addressRequired;
       case "quantity":
+      case "color_breakdown":
         return t.invalidQuantity;
       default:
         return t.genericError;
@@ -58,9 +103,19 @@ export default function OrderForm({ locale }: { locale: Locale }) {
     e.preventDefault();
     if (loading) return;
 
+    if (quantity < 1) {
+      setErrorField("color_breakdown");
+      setErrorText(t.selectColor);
+      return;
+    }
+
     setLoading(true);
     setErrorField(null);
     setErrorText(null);
+
+    const color_breakdown = Object.entries(colorQuantities)
+      .filter(([, qty]) => qty > 0)
+      .map(([code, qty]) => ({ code, quantity: qty }));
 
     try {
       const result = await createOrder({
@@ -71,6 +126,7 @@ export default function OrderForm({ locale }: { locale: Locale }) {
         delivery_type: deliveryType,
         address,
         quantity,
+        color_breakdown,
         customer_note: note,
         website,
       });
@@ -83,6 +139,8 @@ export default function OrderForm({ locale }: { locale: Locale }) {
         setErrorText(validationMessage(result.field));
       } else if (result.error === "rate_limited") {
         setErrorText(t.tooManyAttempts);
+      } else if (result.error === "out_of_stock") {
+        setErrorText(result.message ?? t.outOfStock);
       } else {
         setErrorText(t.genericError);
       }
@@ -93,10 +151,6 @@ export default function OrderForm({ locale }: { locale: Locale }) {
     }
   }
 
-  function changeQuantity(next: number) {
-    setQuantity(Math.min(20, Math.max(1, next)));
-  }
-
   function resetForm() {
     setFullName("");
     setPhone("");
@@ -104,7 +158,7 @@ export default function OrderForm({ locale }: { locale: Locale }) {
     setCommune("");
     setDeliveryType("home");
     setAddress("");
-    setQuantity(1);
+    setColorQuantities({});
     setNote("");
     setErrorField(null);
     setErrorText(null);
@@ -143,14 +197,34 @@ export default function OrderForm({ locale }: { locale: Locale }) {
       {/* Product panel */}
       <aside className="flex flex-col gap-4">
         <div className="overflow-hidden rounded-2xl border border-line bg-surface">
-          {/* Placeholder image: replace with the real bracelet photo later */}
           <Image
-            src="/brand/logo.jpeg"
+            src={PRODUCT_IMAGES[activeImage]}
             alt={t.productName}
-            width={480}
-            height={480}
-            className="h-auto w-full object-contain p-6"
+            width={600}
+            height={600}
+            className="h-auto w-full object-cover"
           />
+        </div>
+
+        <div className="grid grid-cols-4 gap-2">
+          {PRODUCT_IMAGES.map((src, i) => (
+            <button
+              key={src}
+              type="button"
+              onClick={() => setActiveImage(i)}
+              className={`overflow-hidden rounded-lg border-2 transition-colors ${
+                activeImage === i ? "border-brand-green" : "border-transparent"
+              }`}
+            >
+              <Image
+                src={src}
+                alt=""
+                width={140}
+                height={140}
+                className="h-auto w-full object-cover"
+              />
+            </button>
+          ))}
         </div>
 
         <h2 className="font-display text-2xl font-semibold text-brand-green-dark">
@@ -278,34 +352,66 @@ export default function OrderForm({ locale }: { locale: Locale }) {
           </label>
         )}
 
-        <div className="flex flex-col gap-1.5">
-          <span className="text-sm text-ink-muted">{t.quantity}</span>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              aria-label="-"
-              disabled={quantity <= 1}
-              onClick={() => changeQuantity(quantity - 1)}
-              className="h-10 w-10 rounded-lg border border-line bg-white text-lg text-ink disabled:opacity-40"
-            >
-              −
-            </button>
-            <span
-              className="w-10 text-center text-lg font-medium text-ink"
-              style={{ fontFamily: "var(--font-mono)" }}
-            >
-              {quantity}
-            </span>
-            <button
-              type="button"
-              aria-label="+"
-              disabled={quantity >= 20}
-              onClick={() => changeQuantity(quantity + 1)}
-              className="h-10 w-10 rounded-lg border border-line bg-white text-lg text-ink disabled:opacity-40"
-            >
-              +
-            </button>
+        <div className="flex flex-col gap-2">
+          <span className="text-sm text-ink-muted">{t.chooseColors}</span>
+          <div
+            className={`flex flex-col gap-2 rounded-lg border p-3 ${
+              errorField === "color_breakdown" ? "border-danger" : "border-line"
+            }`}
+          >
+            {colors.map((color) => {
+              const qty = colorQuantities[color.code] ?? 0;
+              const outOfStock = color.stock <= 0;
+
+              return (
+                <div key={color.code} className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className="h-6 w-6 shrink-0 rounded-full border border-line"
+                      style={{ backgroundColor: color.hex }}
+                      aria-hidden
+                    />
+                    <span className="text-sm text-ink">{colorName(color, locale)}</span>
+                    {outOfStock && (
+                      <span className="text-xs text-danger">{t.outOfStock}</span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      aria-label="-"
+                      disabled={qty <= 0}
+                      onClick={() => changeColorQuantity(color.code, qty - 1, color.stock)}
+                      className="h-8 w-8 rounded-lg border border-line bg-white text-ink disabled:opacity-40"
+                    >
+                      −
+                    </button>
+                    <span
+                      className="w-6 text-center text-sm font-medium text-ink"
+                      style={{ fontFamily: "var(--font-mono)" }}
+                    >
+                      {qty}
+                    </span>
+                    <button
+                      type="button"
+                      aria-label="+"
+                      disabled={outOfStock || qty >= color.stock}
+                      onClick={() => changeColorQuantity(color.code, qty + 1, color.stock)}
+                      className="h-8 w-8 rounded-lg border border-line bg-white text-ink disabled:opacity-40"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
+          {quantity > 0 && (
+            <p className="text-xs text-ink-muted">
+              {t.totalQuantity}: {quantity}
+            </p>
+          )}
         </div>
 
         <label className="flex flex-col gap-1.5">
