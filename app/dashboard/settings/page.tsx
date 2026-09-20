@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { updatePhone } from "@/actions/auth";
 import type { Locale } from "@/lib/i18n/locale";
 import { dashboardTranslations } from "@/lib/i18n/dashboard-translations";
+import DeleteAccountButton from "./delete-account-button";
 
 export default function SettingsPage() {
   const [locale, setLocaleState] = useState<Locale>("ar");
@@ -35,7 +36,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <main dir={dir} className="flex min-h-screen flex-col items-center justify-center gap-4 bg-bg p-6">
+    <main dir={dir} className="flex min-h-screen flex-col items-center gap-4 bg-bg p-6 pt-16">
       <h1 className="font-display text-2xl font-semibold text-brand-green-dark">{t.settingsTitle}</h1>
       <p className="max-w-sm text-center text-ink-muted">
         {t.settingsDescription}
@@ -60,6 +61,12 @@ export default function SettingsPage() {
 
       {status === "saved" && <p className="text-sm text-brand-green-dark">{t.saved}</p>}
       {error && <p className="text-sm text-danger">{error}</p>}
+
+      <div className="mt-10 w-full max-w-sm border-t border-line pt-8">
+        <h2 className="mb-1 text-base font-semibold text-danger">{t.dangerZoneTitle}</h2>
+        <p className="mb-4 text-sm text-ink-muted">{t.dangerZoneDescription}</p>
+        <DeleteAccountButton locale={locale} />
+      </div>
     </main>
   );
 }

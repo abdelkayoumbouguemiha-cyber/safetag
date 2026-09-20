@@ -297,3 +297,68 @@ export async function updatePhone(phone: string) {
 
   return { success: true };
 }
+
+// ---- Account deletion (GDPR/Law 18-07 right to withdraw consent) ----
+
+export async function deleteAccount(confirmationId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, message: "Not logged in." };
+  }
+
+  const admin = createAdminClient();
+
+  // Verify the reauth confirmation is valid, belongs to this user,
+  // unused, and not expired — same single-use token pattern as
+  // deactivateBracelet in actions/bracelets.ts.
+  const { data: confirmation } = await admin
+    .from("confirmed_reauth_actions")
+    .select("id")
+    .eq("id", confirmationId)
+    .eq("guardian_id", user.id)
+    .eq("used", false)
+    .gt("expires_at", new Date().toISOString())
+    .maybeSingle();
+
+  if (!confirmation) {
+    return { success: false, message: "Please confirm with a fresh code." };
+  }
+
+  await admin
+    .from("confirmed_reauth_actions")
+    .update({ used: true })
+    .eq("id", confirmationId);
+
+  // Deactivate (not delete) all of this guardian's bracelets — keeps the
+  // audit trail intact (scan_logs still purge on the existing 90-day
+  // schedule) while immediately preventing further guardian association
+  // or scan-triggered notifications for these bracelets.
+  await admin
+    .from("children_bracelets")
+    .update({ status: "inactive" })
+    .eq("guardian_id", user.id);
+
+  // Remove push subscriptions — no longer meaningful once the account is gone.
+  await admin.from("push_subscriptions").delete().eq("guardian_id", user.id);
+
+  // Remove the guardian row itself.
+  const { error: guardianDeleteError } = await admin
+    .from("guardians")
+    .delete()
+    .eq("id", user.id);
+
+  if (guardianDeleteError) {
+    return { success: false, message: "Could not delete account data." };
+  }
+
+  // Finally, remove the auth user so login is no longer possible.
+  const { error: authDeleteError } = await admin.auth.admin.deleteUser(user.id);
+
+  if (authDeleteError) {
+    return { success: false, message: "Account data deleted, but could not remove login access. Please contact support." };
+  }
+
+  return { success: true };
+}

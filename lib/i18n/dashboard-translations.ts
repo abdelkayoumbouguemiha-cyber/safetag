@@ -36,6 +36,13 @@ export const dashboardTranslations: Record<Locale, {
   savePhone: string;
   saving: string;
   saved: string;
+  dangerZoneTitle: string;
+  dangerZoneDescription: string;
+  deleteAccount: string;
+  deleteAccountWarning: string;
+  confirmDeleteAccount: string;
+  deletingAccount: string;
+  accountDeleted: string;
 }> = {
   ar: {
     title: "أساوركم",
@@ -73,6 +80,13 @@ export const dashboardTranslations: Record<Locale, {
     savePhone: "حفظ رقم الهاتف",
     saving: "جارِ الحفظ...",
     saved: "تم الحفظ!",
+    dangerZoneTitle: "منطقة الخطر",
+    dangerZoneDescription: "حذف حسابكم نهائي ولا يمكن التراجع عنه. سيتم إلغاء تفعيل جميع أساوركم فورًا.",
+    deleteAccount: "حذف الحساب نهائيًا",
+    deleteAccountWarning: "هل أنتم متأكدون؟ سيتم حذف حسابكم وجميع بياناتكم الشخصية نهائيًا. أساوركم ستُلغى فورًا.",
+    confirmDeleteAccount: "نعم، احذف حسابي نهائيًا",
+    deletingAccount: "جارِ الحذف...",
+    accountDeleted: "تم حذف حسابكم. نتمنى لكم كل الخير.",
   },
   fr: {
     title: "Vos bracelets",
@@ -110,6 +124,13 @@ export const dashboardTranslations: Record<Locale, {
     savePhone: "Enregistrer le numéro",
     saving: "Enregistrement...",
     saved: "Enregistré !",
+    dangerZoneTitle: "Zone de danger",
+    dangerZoneDescription: "La suppression de votre compte est définitive et irréversible. Tous vos bracelets seront immédiatement désactivés.",
+    deleteAccount: "Supprimer définitivement le compte",
+    deleteAccountWarning: "Êtes-vous sûr ? Votre compte et toutes vos données personnelles seront définitivement supprimés. Vos bracelets seront désactivés immédiatement.",
+    confirmDeleteAccount: "Oui, supprimer définitivement mon compte",
+    deletingAccount: "Suppression en cours...",
+    accountDeleted: "Votre compte a été supprimé. Nous vous souhaitons tout le meilleur.",
   },
   en: {
     title: "Your Bracelets",
@@ -147,5 +168,12 @@ export const dashboardTranslations: Record<Locale, {
     savePhone: "Save Phone Number",
     saving: "Saving...",
     saved: "Saved!",
+    dangerZoneTitle: "Danger Zone",
+    dangerZoneDescription: "Deleting your account is permanent and cannot be undone. All your bracelets will be deactivated immediately.",
+    deleteAccount: "Permanently Delete Account",
+    deleteAccountWarning: "Are you sure? Your account and all your personal data will be permanently deleted. Your bracelets will be deactivated immediately.",
+    confirmDeleteAccount: "Yes, permanently delete my account",
+    deletingAccount: "Deleting...",
+    accountDeleted: "Your account has been deleted. We wish you all the best.",
   },
 };
